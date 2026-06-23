@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ride Book Karo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>🚖 Ride Book Karo</h1>
+
+<form id="rideForm">
+  <input id="name" placeholder="Passenger Name" required>
+  <input id="pickup" placeholder="Pickup Location" required>
+  <input id="drop" placeholder="Drop Location" required>
+  <input id="fare" type="number" placeholder="Fare ₹" required>
+
+  <select id="payment">
+    <option value="Cash">Cash</option>
+    <option value="UPI">UPI</option>
+  </select>
+
+  <button type="submit">Book Ride</button>
+</form>
+
+<p id="msg"></p>
+
+<script src="script.js"></script>
+</body>
+</html>
