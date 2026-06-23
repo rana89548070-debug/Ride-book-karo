@@ -1,9 +1,5 @@
-import { db } from "./firebase.js";
-import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const rideList = document.getElementById("rideList");
-
 window.loadAdminRides = () => {
+    console.log("Loading rides..."); // यह चेक करने के लिए जोड़ें
     onSnapshot(collection(db, "rides"), (snapshot) => {
         rideList.innerHTML = "";
         snapshot.forEach((doc) => {
