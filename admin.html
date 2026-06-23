@@ -1,24 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin - Ride Book Karo</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Ride Requests</title>
+    <style>
+        .ride-card { border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 8px; }
+        .pending { color: orange; font-weight: bold; }
+    </style>
 </head>
 <body>
+    <h1>Pending Ride Requests</h1>
+    <div id="rideList">Loading rides...</div>
 
-<h1>👑 Admin Login</h1>
-
-<div id="login">
-  <input id="adminMobile" placeholder="Admin Mobile Number">
-  <button onclick="login()">Login</button>
-</div>
-
-<div id="panel" style="display:none;">
-  <h2>All Rides</h2>
-  <button onclick="loadRides()">Refresh</button>
-  <div id="data"></div>
-</div>
-
-<script src="admin.js"></script>
+    <script type="module" src="admin.js"></script>
 </body>
 </html>
