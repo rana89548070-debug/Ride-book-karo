@@ -2,16 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard - Ride Requests</title>
-    <style>
-        .ride-card { border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 8px; }
-        .pending { color: orange; font-weight: bold; }
-    </style>
+    <title>Admin Login</title>
 </head>
 <body>
-    <h1>Pending Ride Requests</h1>
-    <div id="rideList">Loading rides...</div>
+    <div id="loginSection">
+        <h3>Admin Login</h3>
+        <input type="text" id="adminPhone" placeholder="Enter Admin Mobile">
+        <button onclick="checkLogin()">Login</button>
+    </div>
+
+    <div id="dashboard" style="display:none;">
+        <h1>Pending Rides</h1>
+        <div id="rideList"></div>
+    </div>
 
     <script type="module" src="admin.js"></script>
+    <script>
+        function checkLogin() {
+            const phone = document.getElementById("adminPhone").value;
+            if (phone === "7830722258") {
+                document.getElementById("loginSection").style.display = "none";
+                document.getElementById("dashboard").style.display = "block";
+                window.loadAdminRides(); // यह function admin.js से आएगा
+            } else {
+                alert("Invalid Admin Number!");
+            }
+        }
+    </script>
 </body>
 </html>
