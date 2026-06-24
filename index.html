@@ -1,9 +1,38 @@
-<!DOCTYPE html>
-<html>
-<body>
-    <input id="name" placeholder="Enter Name">
-    <input id="phone" placeholder="Enter Phone">
-    <button onclick="bookRide()">Book Ride</button>
-    <script type="module" src="app.js"></script>
-</body>
-</html>
+import { db } from "./firebase.js";
+import {
+  collection,
+  addDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// button se call hoga
+window.bookRide = async function () {
+  try {
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    // basic validation
+    if (!name || !phone) {
+      alert("Name aur Phone dono bharo");
+      return;
+    }
+
+    // Firestore me data save
+    await addDoc(collection(db, "rides"), {
+      name: name,
+      phone: phone,
+      status: "Pending",
+      createdAt: serverTimestamp()
+    });
+
+    alert("✅ Ride Booked Successfully!");
+
+    // input clear
+    document.getElementById("name").value = "";
+    document.getElementById("phone").value = "";
+
+  } catch (error) {
+    console.error("Error booking ride:", error);
+    alert("❌ Something went wrong");
+  }
+};
