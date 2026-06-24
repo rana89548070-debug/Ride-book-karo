@@ -6,14 +6,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 /* ===== GLOBAL ===== */
-const apiKey = "AIzaSyCW0a_ClbmEG0gnyZZ_DzPvmPFvx20mfk8";
-
 window.pickupLat = null;
 window.pickupLng = null;
 window.pickupAddress = null;
 window.totalFare = null;
 
-/* ===== GET LOCATION ===== */
+/* ===== GET LOCATION (GPS only) ===== */
 window.getLocation = function () {
   if (!navigator.geolocation) {
     alert("Geolocation not supported");
@@ -21,17 +19,12 @@ window.getLocation = function () {
   }
 
   navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      pickupLat = position.coords.latitude;
-      pickupLng = position.coords.longitude;
+    (pos) => {
+      pickupLat = pos.coords.latitude;
+      pickupLng = pos.coords.longitude;
 
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${pickupLat},${pickupLng}&key=${apiKey}`;
-      const res = await fetch(url);
-      const data = await res.json();
-
-      pickupAddress = data.results[0].formatted_address;
       document.getElementById("pickupText").innerText =
-        "Pickup: " + pickupAddress;
+        "Pickup Coordinates: " + pickupLat + ", " + pickupLng;
     },
     () => {
       alert("❌ Location denied");
@@ -39,8 +32,8 @@ window.getLocation = function () {
   );
 };
 
-/* ===== CALCULATE FARE ===== */
-window.calculateFare = async function () {
+/* ===== CALCULATE FARE (Google Maps SDK) ===== */
+window.calculateFare = function () {
   if (!pickupLat || !pickupLng) {
     alert("Pickup location lo pehle");
     return;
@@ -52,24 +45,33 @@ window.calculateFare = async function () {
     return;
   }
 
-  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${pickupLat},${pickupLng}&destinations=${encodeURIComponent(
-    drop
-  )}&key=${apiKey}`;
+  const service = new google.maps.DistanceMatrixService();
 
-  const res = await fetch(url);
-  const data = await res.json();
+  service.getDistanceMatrix(
+    {
+      origins: [{ lat: pickupLat, lng: pickupLng }],
+      destinations: [drop],
+      travelMode: google.maps.TravelMode.DRIVING,
+    },
+    (response, status) => {
+      if (status !== "OK") {
+        alert("Distance error: " + status);
+        return;
+      }
 
-  const element = data.rows[0].elements[0];
-  const distanceKm = element.distance.value / 1000;
+      const element = response.rows[0].elements[0];
+      const distanceKm = element.distance.value / 1000;
 
-  const baseFare = 30;
-  const perKm = 12;
-  totalFare = Math.round(baseFare + distanceKm * perKm);
+      const baseFare = 30;
+      const perKm = 12;
+      totalFare = Math.round(baseFare + distanceKm * perKm);
 
-  document.getElementById("distanceText").innerText =
-    "Distance: " + element.distance.text;
-  document.getElementById("fareText").innerText =
-    "Fare: ₹" + totalFare;
+      document.getElementById("distanceText").innerText =
+        "Distance: " + element.distance.text;
+      document.getElementById("fareText").innerText =
+        "Fare: ₹" + totalFare;
+    }
+  );
 };
 
 /* ===== BOOK RIDE ===== */
@@ -78,7 +80,7 @@ window.bookRide = async function () {
   const phone = document.getElementById("phone").value.trim();
   const drop = document.getElementById("drop").value.trim();
 
-  if (!name || !phone || !pickupAddress || !drop || !totalFare) {
+  if (!name || !phone || !pickupLat || !drop || !totalFare) {
     alert("❌ Complete details bharo");
     return;
   }
@@ -86,7 +88,8 @@ window.bookRide = async function () {
   await addDoc(collection(db, "rides"), {
     name,
     phone,
-    pickup: pickupAddress,
+    pickupLat,
+    pickupLng,
     drop,
     fare: totalFare,
     status: "Pending",
