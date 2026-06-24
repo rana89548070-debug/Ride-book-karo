@@ -1,94 +1,71 @@
-// app.js (FINAL COMPLETE VERSION)
-
 import { db } from "./firebase.js";
 import {
   collection,
-  addDoc
+  addDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-/* =========================
-   USER LOCATION (GPS)
-========================= */
-function getUserLocation() {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject("Geolocation not supported");
+let userLat = null;
+let userLng = null;
+let fare = null;
+
+/* 📍 LOCATION FETCH */
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      userLat = position.coords.latitude;
+      userLng = position.coords.longitude;
+
+      document.getElementById("locationText").innerText =
+        "📍 Location fetched";
+
+      // Simple fare logic
+      fare = 50; // base fare
+      document.getElementById("fareText").innerText =
+        "💰 Fare: ₹" + fare;
+    },
+    () => {
+      document.getElementById("locationText").innerText =
+        "❌ Location denied";
+    }
+  );
+}
+
+/* 🚕 BOOK RIDE */
+window.bookRide = async function () {
+  try {
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    if (!name || !phone) {
+      alert("Name & Phone required");
+      return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        resolve({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        });
-      },
-      () => {
-        reject("Location permission denied");
-      }
-    );
-  });
-}
+    if (!userLat || !userLng) {
+      alert("Location not available");
+      return;
+    }
 
-/* =========================
-   FARE CALCULATION
-========================= */
-function calculateFare(distanceKm) {
-  const baseFare = 30;   // ₹ base
-  const perKm = 10;      // ₹ per km
-  return baseFare + distanceKm * perKm;
-}
-
-/* =========================
-   MAIN BOOK RIDE FUNCTION
-========================= */
-window.bookRide = async function () {
-
-  const name = document.getElementById("name").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const destination = document.getElementById("destination").value.trim();
-
-  if (!name || !phone || !destination) {
-    alert("Please fill all details");
-    return;
-  }
-
-  let pickupLocation;
-  try {
-    pickupLocation = await getUserLocation();
-  } catch (error) {
-    alert("Please allow location access");
-    return;
-  }
-
-  // Temporary distance logic (REAL maps later)
-  const distanceKm = Math.floor(Math.random() * 8) + 2; // 2–10 km
-  const fare = calculateFare(distanceKm);
-
-  try {
     await addDoc(collection(db, "rides"), {
-      name: name,
-      phone: phone,
-      destination: destination,
-
-      pickupLocation: pickupLocation,
-      distanceKm: distanceKm,
-      fare: fare,
-
+      name,
+      phone,
+      location: {
+        lat: userLat,
+        lng: userLng
+      },
+      fare,
       status: "Pending",
-      paymentType: "Cash",
-
-      createdAt: new Date()
+      createdAt: serverTimestamp()
     });
 
-    alert(`Ride Booked ✅\nEstimated Fare: ₹${fare}`);
+    alert("✅ Ride Booked Successfully");
 
-    // optional: clear fields
     document.getElementById("name").value = "";
     document.getElementById("phone").value = "";
-    document.getElementById("destination").value = "";
 
   } catch (error) {
     console.error(error);
-    alert("Something went wrong. Try again.");
+    alert("❌ Error, check console");
   }
 };
