@@ -2,7 +2,7 @@ let pickupLat = null;
 let pickupLng = null;
 let totalFare = null;
 
-/* ===== GET PICKUP LOCATION ===== */
+/* ========= GET PICKUP LOCATION ========= */
 function getPickup() {
   if (!navigator.geolocation) {
     alert("Geolocation supported nahi hai");
@@ -10,12 +10,12 @@ function getPickup() {
   }
 
   navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      pickupLat = pos.coords.latitude;
-      pickupLng = pos.coords.longitude;
+    (position) => {
+      pickupLat = position.coords.latitude;
+      pickupLng = position.coords.longitude;
 
       document.getElementById("pickupText").innerText =
-        `Pickup: ${pickupLat.toFixed(4)}, ${pickupLng.toFixed(4)}`;
+        `Pickup: ${pickupLat.toFixed(5)}, ${pickupLng.toFixed(5)}`;
     },
     () => {
       alert("❌ Location allow nahi ki");
@@ -23,9 +23,9 @@ function getPickup() {
   );
 }
 
-/* ===== CALCULATE DISTANCE + FARE ===== */
+/* ========= CALCULATE DISTANCE + FARE ========= */
 function calculateFare() {
-  if (!pickupLat || !pickupLng) {
+  if (pickupLat === null || pickupLng === null) {
     alert("❌ Pehle pickup location lo");
     return;
   }
@@ -35,6 +35,62 @@ function calculateFare() {
     alert("❌ Drop location likho");
     return;
   }
+
+  const service = new google.maps.DistanceMatrixService();
+
+  service.getDistanceMatrix(
+    {
+      origins: [{ lat: pickupLat, lng: pickupLng }],
+      destinations: [drop],
+      travelMode: google.maps.TravelMode.DRIVING,
+    },
+    (response, status) => {
+      if (status !== "OK") {
+        alert("❌ Google Maps Error: " + status);
+        return;
+      }
+
+      const element = response.rows[0].elements[0];
+      if (element.status !== "OK") {
+        alert("❌ Drop location galat hai");
+        return;
+      }
+
+      const distanceKm = element.distance.value / 1000;
+
+      const baseFare = 30; // ₹
+      const perKm = 12;    // ₹ per km
+      totalFare = Math.round(baseFare + distanceKm * perKm);
+
+      document.getElementById("distanceText").innerText =
+        "Distance: " + element.distance.text;
+
+      document.getElementById("fareText").innerText =
+        "Fare: ₹" + totalFare;
+    }
+  );
+}
+
+/* ========= BOOK RIDE ========= */
+function bookRide() {
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const drop = document.getElementById("drop").value.trim();
+
+  if (!name || !phone || !pickupLat || !pickupLng || !drop || !totalFare) {
+    alert("❌ Pehle fare calculate karo aur sab details bharo");
+    return;
+  }
+
+  alert(
+    "✅ Ride Booked Successfully!\n\n" +
+    "Name: " + name +
+    "\nPhone: " + phone +
+    "\nPickup: " + pickupLat.toFixed(4) + ", " + pickupLng.toFixed(4) +
+    "\nDrop: " + drop +
+    "\nFare: ₹" + totalFare
+  );
+}  }
 
   const service = new google.maps.DistanceMatrixService();
 
