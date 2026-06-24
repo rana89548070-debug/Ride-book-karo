@@ -1,40 +1,64 @@
-import { db } from "./firebase.js";
-import {
-  collection,
-  addDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+let pickupLat = null;
+let pickupLng = null;
 
-/* ===== GLOBAL ===== */
-window.pickupLat = null;
-window.pickupLng = null;
-window.pickupAddress = null;
-window.totalFare = null;
+// STEP 1: Get Pickup Location
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        pickupLat = position.coords.latitude;
+        pickupLng = position.coords.longitude;
 
-/* ===== GET LOCATION (GPS only) ===== */
-window.getLocation = function () {
-  if (!navigator.geolocation) {
+        document.getElementById("pickupText").innerText =
+          `Pickup: ${pickupLat.toFixed(4)}, ${pickupLng.toFixed(4)}`;
+      },
+      () => {
+        alert("Location access denied");
+      }
+    );
+  } else {
     alert("Geolocation not supported");
+  }
+}
+
+// STEP 2: Calculate Distance + Fare
+function calculateFare() {
+  if (pickupLat === null) {
+    alert("पहले Pickup Location लो");
     return;
   }
 
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      pickupLat = pos.coords.latitude;
-      pickupLng = pos.coords.longitude;
+  let drop = document.getElementById("drop").value;
+  if (drop === "") {
+    alert("Drop location लिखो");
+    return;
+  }
 
-      document.getElementById("pickupText").innerText =
-        "Pickup Coordinates: " + pickupLat + ", " + pickupLng;
-    },
-    () => {
-      alert("❌ Location denied");
-    }
-  );
-};
+  // 🔢 FAKE distance (demo purpose)
+  let distanceKm = Math.floor(Math.random() * 10) + 1;
 
-/* ===== CALCULATE FARE (Google Maps SDK) ===== */
-window.calculateFare = function () {
-  if (!pickupLat || !pickupLng) {
+  let ratePerKm = 10; // ₹10 per km
+  let fare = distanceKm * ratePerKm;
+
+  document.getElementById("distanceText").innerText =
+    `Distance: ${distanceKm} km`;
+
+  document.getElementById("fareText").innerText =
+    `Fare: ₹${fare}`;
+}
+
+// STEP 3: Book Ride
+function bookRide() {
+  let name = document.getElementById("name").value;
+  let phone = document.getElementById("phone").value;
+
+  if (name === "" || phone === "") {
+    alert("Name aur Phone bharo");
+    return;
+  }
+
+  alert("✅ Ride Booked Successfully!");
+}  if (!pickupLat || !pickupLng) {
     alert("Pickup location lo pehle");
     return;
   }
