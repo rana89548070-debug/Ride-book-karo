@@ -5,67 +5,93 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-let userLat = null;
-let userLng = null;
-let fare = null;
+/* ===== GLOBAL ===== */
+const apiKey = "AIzaSyCW0a_ClbmEG0gnyZZ_DzPvmPFvx20mfk8";
 
-/* 📍 LOCATION FETCH */
-if (navigator.geolocation) {
+window.pickupLat = null;
+window.pickupLng = null;
+window.pickupAddress = null;
+window.totalFare = null;
+
+/* ===== GET LOCATION ===== */
+window.getLocation = function () {
+  if (!navigator.geolocation) {
+    alert("Geolocation not supported");
+    return;
+  }
+
   navigator.geolocation.getCurrentPosition(
-    (position) => {
-      userLat = position.coords.latitude;
-      userLng = position.coords.longitude;
+    async (position) => {
+      pickupLat = position.coords.latitude;
+      pickupLng = position.coords.longitude;
 
-      document.getElementById("locationText").innerText =
-        "📍 Location fetched";
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${pickupLat},${pickupLng}&key=${apiKey}`;
+      const res = await fetch(url);
+      const data = await res.json();
 
-      // Simple fare logic
-      fare = 50; // base fare
-      document.getElementById("fareText").innerText =
-        "💰 Fare: ₹" + fare;
+      pickupAddress = data.results[0].formatted_address;
+      document.getElementById("pickupText").innerText =
+        "Pickup: " + pickupAddress;
     },
     () => {
-      document.getElementById("locationText").innerText =
-        "❌ Location denied";
+      alert("❌ Location denied");
     }
   );
-}
+};
 
-/* 🚕 BOOK RIDE */
-window.bookRide = async function () {
-  try {
-    const name = document.getElementById("name").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-
-    if (!name || !phone) {
-      alert("Name & Phone required");
-      return;
-    }
-
-    if (!userLat || !userLng) {
-      alert("Location not available");
-      return;
-    }
-
-    await addDoc(collection(db, "rides"), {
-      name,
-      phone,
-      location: {
-        lat: userLat,
-        lng: userLng
-      },
-      fare,
-      status: "Pending",
-      createdAt: serverTimestamp()
-    });
-
-    alert("✅ Ride Booked Successfully");
-
-    document.getElementById("name").value = "";
-    document.getElementById("phone").value = "";
-
-  } catch (error) {
-    console.error(error);
-    alert("❌ Error, check console");
+/* ===== CALCULATE FARE ===== */
+window.calculateFare = async function () {
+  if (!pickupLat || !pickupLng) {
+    alert("Pickup location lo pehle");
+    return;
   }
+
+  const drop = document.getElementById("drop").value.trim();
+  if (!drop) {
+    alert("Drop location daalo");
+    return;
+  }
+
+  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${pickupLat},${pickupLng}&destinations=${encodeURIComponent(
+    drop
+  )}&key=${apiKey}`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  const element = data.rows[0].elements[0];
+  const distanceKm = element.distance.value / 1000;
+
+  const baseFare = 30;
+  const perKm = 12;
+  totalFare = Math.round(baseFare + distanceKm * perKm);
+
+  document.getElementById("distanceText").innerText =
+    "Distance: " + element.distance.text;
+  document.getElementById("fareText").innerText =
+    "Fare: ₹" + totalFare;
+};
+
+/* ===== BOOK RIDE ===== */
+window.bookRide = async function () {
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const drop = document.getElementById("drop").value.trim();
+
+  if (!name || !phone || !pickupAddress || !drop || !totalFare) {
+    alert("❌ Complete details bharo");
+    return;
+  }
+
+  await addDoc(collection(db, "rides"), {
+    name,
+    phone,
+    pickup: pickupAddress,
+    drop,
+    fare: totalFare,
+    status: "Pending",
+    createdAt: serverTimestamp()
+  });
+
+  alert("✅ Ride Booked Successfully");
 };
