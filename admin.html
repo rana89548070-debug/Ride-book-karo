@@ -1,33 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Login</title>
-</head>
+<html>
 <body>
-    <div id="loginSection">
-        <h3>Admin Login</h3>
-        <input type="text" id="adminPhone" placeholder="Enter Admin Mobile">
-        <button onclick="checkLogin()">Login</button>
-    </div>
-
-    <div id="dashboard" style="display:none;">
-        <h1>Pending Rides</h1>
-        <div id="rideList"></div>
-    </div>
-
-    <script type="module" src="admin.js"></script>
+    <h2>Admin Panel</h2>
+    <input id="adminPhone" placeholder="Enter Admin Number">
+    <button onclick="checkAdmin()">Login</button>
+    <ul id="rideList" style="display:none;"></ul>
     <script>
-        function checkLogin() {
-            const phone = document.getElementById("adminPhone").value;
-            if (phone === "7830722258") {
-                document.getElementById("loginSection").style.display = "none";
-                document.getElementById("dashboard").style.display = "block";
-                window.loadAdminRides(); // यह function admin.js से आएगा
-            } else {
-                alert("Invalid Admin Number!");
-            }
+        function checkAdmin() {
+            if (document.getElementById("adminPhone").value === "7830722258") {
+                document.getElementById("rideList").style.display = "block";
+            } else { alert("Unauthorized"); }
         }
     </script>
+    <script type="module" src="admin.js"></script>
 </body>
 </html>
