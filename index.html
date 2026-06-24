@@ -3,10 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Ride Book Karo</title>
-
-  <!-- ✅ Google Maps JavaScript SDK (VERY IMPORTANT) -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCW0a_ClbmEG0gnyZZ_DzPvmPFvx20mfk8&libraries=places"></script>
-
 </head>
 <body>
 
@@ -18,7 +14,7 @@
   <button onclick="getLocation()">📍 Get Pickup Location</button>
   <p id="pickupText">Pickup: --</p>
 
-  <input id="drop" placeholder="Enter Drop Location"><br><br>
+  <input id="drop" placeholder="Enter Drop Location (e.g. Bus Stand)"><br><br>
 
   <button onclick="calculateFare()">💰 Calculate Fare</button>
 
@@ -28,8 +24,7 @@
   <br>
   <button onclick="bookRide()">✅ Book Ride</button>
 
-  <!-- ✅ App JS (module is required) -->
-  <script type="module" src="app.js"></script>
+  <script src="app.js"></script>
 
 </body>
 </html>
