@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>Ride Book Karo</title>
-</head>
 <body>
 
-  <h2>Book Your Ride</h2>
+<button id="btn">Get Location</button>
 
-  <input id="name" placeholder="Enter Name"><br><br>
-  <input id="phone" placeholder="Enter Phone"><br><br>
-
-  <p id="locationText">📍 Fetching location...</p>
-  <p id="fareText">💰 Fare: --</p>
-
-  <button onclick="bookRide()">Book Ride</button>
-
-  <script type="module" src="./app.js"></script>
+<script>
+document.getElementById("btn").onclick = function () {
+  navigator.geolocation.getCurrentPosition(
+    function (pos) {
+      alert("LAT: " + pos.coords.latitude);
+    },
+    function (err) {
+      alert("ERROR: " + err.message);
+    }
+  );
+};
+</script>
 
 </body>
-</html>  }
-};
+</html>
