@@ -11,10 +11,10 @@
   <input id="name" placeholder="Enter Name"><br><br>
   <input id="phone" placeholder="Enter Phone"><br><br>
 
-  <button onclick="getLocation()">📍 Get Pickup Location</button>
+  <button onclick="getPickup()">📍 Get Pickup Location</button>
   <p id="pickupText">Pickup: --</p>
 
-  <input id="drop" placeholder="Enter Drop Location (e.g. Bus Stand)"><br><br>
+  <input id="drop" placeholder="Enter Drop Location"><br><br>
 
   <button onclick="calculateFare()">💰 Calculate Fare</button>
 
@@ -24,6 +24,10 @@
   <br>
   <button onclick="bookRide()">✅ Book Ride</button>
 
+  <!-- Google Maps API (APNI KEY DAALO) -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_API_KEY"></script>
+
+  <!-- App JS -->
   <script src="app.js"></script>
 
 </body>
