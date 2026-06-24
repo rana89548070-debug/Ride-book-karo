@@ -1,39 +1,38 @@
-let pickupCoords = null;
-let pickupAddressStr = "";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ride Book Karo</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, button { margin-bottom: 10px; padding: 8px; width: 80%; max-width: 300px; }
+  </style>
+</head>
+<body>
 
-// 1. PICKUP LOCATION FETCH KARNE KA LOGIC
-function getPickup() {
-    const pickupText = document.getElementById("pickupText");
-    pickupText.innerText = "📍 Fetching location...";
+<h2>🏍️ Book Your Ride</h2>
 
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                pickupCoords = new google.maps.LatLng(lat, lng);
+<input id="name" placeholder="Name"><br>
+<input id="phone" placeholder="Phone"><br>
 
-                // Google Geocoder se Lat/Long ko real address me badlenge
-                const geocoder = new google.maps.Geocoder();
-                geocoder.geocode({ location: pickupCoords }, (results, status) => {
-                    if (status === "OK" && results[0]) {
-                        pickupAddressStr = results[0].formatted_address;
-                        pickupText.innerText = "Pickup: " + pickupAddressStr;
-                    } else {
-                        pickupAddressStr = `${lat}, ${lng}`;
-                        pickupText.innerText = `Pickup: ${lat.toFixed(3)}, ${lng.toFixed(3)}`;
-                    }
-                });
-            },
-            (error) => {
-                alert("Please browser me Location permission 'Allow' karein.");
-                pickupText.innerText = "Pickup: Permission Denied";
-            }
-        );
-    } else {
-        alert("Aapka browser location support nahi karta.");
-    }
-}
+<button onclick="getPickup()">📍 Get Pickup Location</button>
+<p id="pickupText">Pickup: --</p>
+
+<input id="drop" placeholder="Enter Drop Location"><br>
+
+<button onclick="calculateFare()">💰 Calculate Fare</button>
+
+<p id="distanceText">Distance: --</p>
+<p id="fareText">Fare: --</p>
+
+<button onclick="bookRide()">✅ Book Ride</button>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGq5g3zt23YkCmD81a-HrZq6effxmFPa0&libraries=places"></script>
+
+<script src="app.js"></script>
+</body>
+</html>
 
 // 2. FARE AUR DISTANCE CALCULATE KARNE KA LOGIC
 function calculateFare() {
