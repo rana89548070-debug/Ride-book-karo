@@ -6,20 +6,21 @@
   <title>Ride Book Karo</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
-    input, button { margin-bottom: 10px; padding: 8px; width: 80%; max-width: 300px; }
+    input, button { margin-bottom: 10px; padding: 8px; width: 80%; max-width: 300px; display: block; }
+    p { margin: 5px 0 15px 0; font-weight: bold; }
   </style>
 </head>
 <body>
 
-<h2>🏍️ Book Your Ride</h2>
+<h2>🚕 Book Your Ride</h2>
 
-<input id="name" placeholder="Name"><br>
-<input id="phone" placeholder="Phone"><br>
+<input id="name" placeholder="Name">
+<input id="phone" placeholder="Phone">
 
 <button onclick="getPickup()">📍 Get Pickup Location</button>
 <p id="pickupText">Pickup: --</p>
 
-<input id="drop" placeholder="Enter Drop Location"><br>
+<input id="drop" placeholder="Enter Drop Location">
 
 <button onclick="calculateFare()">💰 Calculate Fare</button>
 
@@ -31,75 +32,6 @@
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGq5g3zt23YkCmD81a-HrZq6effxmFPa0&libraries=places"></script>
 
 <script src="app.js"></script>
+
 </body>
 </html>
-
-// 2. FARE AUR DISTANCE CALCULATE KARNE KA LOGIC
-function calculateFare() {
-    const dropInput = document.getElementById("drop").value;
-    const distanceText = document.getElementById("distanceText");
-    const fareText = document.getElementById("fareText");
-
-    if (!pickupCoords) {
-        alert("Bhai, pehle 'Get Pickup Location' par click karo!");
-        return;
-    }
-    if (!dropInput) {
-        alert("Please drop location ka naam likho (e.g. Haldwani)");
-        return;
-    }
-
-    distanceText.innerText = "Distance: Calculating...";
-    fareText.innerText = "Fare: --";
-
-    const service = new google.maps.DistanceMatrixService();
-
-    service.getDistanceMatrix(
-        {
-            origins: [pickupCoords],
-            destinations: [dropInput],
-            travelMode: google.maps.TravelMode.DRIVING,
-            unitSystem: google.maps.UnitSystem.METRIC,
-        },
-        (response, status) => {
-            if (status === "OK") {
-                const element = response.rows[0].elements[0];
-                
-                if (element.status === "OK") {
-                    const distanceInMeters = element.distance.value; // e.g. 14500 meters
-                    const distanceStr = element.distance.text;       // "14.5 km"
-                    
-                    const distanceKm = distanceInMeters / 1000;
-                    const ratePerKm = 12; // ₹12 per Kilometer ka rate
-                    const totalFare = Math.round(distanceKm * ratePerKm);
-
-                    distanceText.innerText = "Distance: " + distanceStr;
-                    fareText.innerText = "Fare: ₹" + totalFare;
-                } else {
-                    alert("Is drop location ka rasta Google Map ko nahi mila.");
-                    distanceText.innerText = "Distance: Route Not Found";
-                }
-            } else {
-                alert("Google API Error: " + status);
-            }
-        }
-    );
-}
-
-// 3. RIDE BOOKING BUTTON LOGIC
-function bookRide() {
-    const name = document.getElementById("name").value;
-    const phone = document.getElementById("phone").value;
-    const fare = document.getElementById("fareText").innerText;
-
-    if(!name || !phone) {
-        alert("Pehle apna Name aur Phone number daalo!");
-        return;
-    }
-    if(fare === "Fare: --" || fare === "") {
-        alert("Pehle 'Calculate Fare' par click karke kiraya pata karo!");
-        return;
-    }
-
-    alert(`🎉 Congratulations ${name}!\nAapki ride book ho chuki hai.\nKiraya: ${fare}\nHamara driver aapko ${phone} par call karega.`);
-}
