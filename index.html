@@ -1,21 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Ride Book Karo</title>
 </head>
 <body>
 
-<h2>Book Your Ride</h2>
+  <h2>🚕 Book Your Ride</h2>
 
-<input id="name" placeholder="Enter Name"><br><br>
-<input id="phone" placeholder="Enter Phone"><br><br>
+  <input id="name" placeholder="Enter Name"><br><br>
+  <input id="phone" placeholder="Enter Phone"><br><br>
 
-<p id="pickup">📍 Pickup: Not fetched</p>
-<p id="fare">💰 Fare: --</p>
+  <button onclick="getLocation()">📍 Get Pickup Location</button>
+  <p id="pickupText">Pickup: --</p>
 
-<button onclick="bookRide()">Book Ride</button>
+  <input id="drop" placeholder="Enter Drop Location"><br><br>
 
-<script type="module" src="./app.js"></script>
+  <button onclick="calculateFare()">💰 Calculate Fare</button>
+
+  <p id="distanceText">Distance: --</p>
+  <p id="fareText">Fare: --</p>
+
+  <br>
+  <button onclick="bookRide()">✅ Book Ride</button>
+
+  <!-- IMPORTANT -->
+  <script type="module" src="app.js"></script>
+
 </body>
 </html>
