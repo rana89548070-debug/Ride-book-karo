@@ -1,34 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
   <title>Ride Book Karo</title>
 </head>
 <body>
 
-  <h2>🚕 Book Your Ride</h2>
+<h2>🚕 Book Your Ride</h2>
 
-  <input id="name" placeholder="Enter Name"><br><br>
-  <input id="phone" placeholder="Enter Phone"><br><br>
+<input id="name" placeholder="Name"><br><br>
+<input id="phone" placeholder="Phone"><br><br>
 
-  <button onclick="getPickup()">📍 Get Pickup Location</button>
-  <p id="pickupText">Pickup: --</p>
+<button onclick="getPickup()">📍 Get Pickup Location</button>
+<p id="pickupText">Pickup: --</p>
 
-  <input id="drop" placeholder="Enter Drop Location"><br><br>
+<input id="drop" placeholder="Enter Drop Location"><br><br>
 
-  <button onclick="calculateFare()">💰 Calculate Fare</button>
+<button onclick="calculateFare()">💰 Calculate Fare</button>
 
-  <p id="distanceText">Distance: --</p>
-  <p id="fareText">Fare: --</p>
+<p id="distanceText">Distance: --</p>
+<p id="fareText">Fare: --</p>
 
-  <br>
-  <button onclick="bookRide()">✅ Book Ride</button>
+<button onclick="bookRide()">✅ Book Ride</button>
 
-  <!-- 🔑 API KEY YAHI DAALNI HAI -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCW0a_ClbmEG0gnyZZ_DzPvmPFvx20mfk8"></script>
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
 
-  <!-- App Logic -->
-  <script src="app.js"></script>
-
+<script src="app.js"></script>
 </body>
 </html>
