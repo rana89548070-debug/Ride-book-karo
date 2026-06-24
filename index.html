@@ -1,38 +1,23 @@
-import { db } from "./firebase.js";
-import {
-  collection,
-  addDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Ride Book Karo</title>
+</head>
+<body>
 
-// button se call hoga
-window.bookRide = async function () {
-  try {
-    const name = document.getElementById("name").value.trim();
-    const phone = document.getElementById("phone").value.trim();
+  <h2>Book Your Ride</h2>
 
-    // basic validation
-    if (!name || !phone) {
-      alert("Name aur Phone dono bharo");
-      return;
-    }
+  <input id="name" placeholder="Enter Name"><br><br>
+  <input id="phone" placeholder="Enter Phone"><br><br>
 
-    // Firestore me data save
-    await addDoc(collection(db, "rides"), {
-      name: name,
-      phone: phone,
-      status: "Pending",
-      createdAt: serverTimestamp()
-    });
+  <p id="locationText">📍 Fetching location...</p>
+  <p id="fareText">💰 Fare: --</p>
 
-    alert("✅ Ride Booked Successfully!");
+  <button onclick="bookRide()">Book Ride</button>
 
-    // input clear
-    document.getElementById("name").value = "";
-    document.getElementById("phone").value = "";
+  <script type="module" src="./app.js"></script>
 
-  } catch (error) {
-    console.error("Error booking ride:", error);
-    alert("❌ Something went wrong");
-  }
+</body>
+</html>  }
 };
