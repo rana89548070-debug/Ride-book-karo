@@ -1,15 +1,10 @@
-window.loadAdminRides = () => {
-    console.log("Loading rides..."); // यह चेक करने के लिए जोड़ें
-    onSnapshot(collection(db, "rides"), (snapshot) => {
-        rideList.innerHTML = "";
-        snapshot.forEach((doc) => {
-            const ride = doc.data();
-            rideList.innerHTML += `
-                <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-                    <p>Name: ${ride.name} | Phone: ${ride.phone}</p>
-                    <p>Status: ${ride.status}</p>
-                </div>
-            `;
-        });
+import { db } from "./firebase.js";
+import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+onSnapshot(collection(db, "rides"), (snapshot) => {
+    let list = "";
+    snapshot.forEach((doc) => {
+        list += `<li>${doc.data().name} - ${doc.data().phone}</li>`;
     });
-};
+    document.getElementById("rideList").innerHTML = list;
+});
