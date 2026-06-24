@@ -3,33 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ride Book Karo</title>
+  <title>Ride Book Karo With Map</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    input, button { margin-bottom: 10px; padding: 8px; width: 80%; max-width: 300px; display: block; }
+    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; }
+    input, button { margin-bottom: 10px; padding: 10px; width: 100%; max-width: 360px; display: block; box-sizing: border-box; }
+    button { background-color: #4CAF50; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
+    button:hover { background-color: #45a049; }
     p { margin: 5px 0 15px 0; font-weight: bold; }
+    
+    /* MAP STYLING: Isse screen par map dikhega */
+    #map {
+      width: 100%;
+      max-width: 360px;
+      height: 300px;
+      margin-bottom: 15px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
 
 <h2>🚕 Book Your Ride</h2>
 
-<input id="name" placeholder="Name">
-<input id="phone" placeholder="Phone">
+<input id="name" placeholder="Apna Name Likhein">
+<input id="phone" placeholder="Apna Phone Number">
 
-<button onclick="getPickup()">📍 Get Pickup Location</button>
+<button onclick="getPickup()">📍 1. Get Live Pickup Location</button>
 <p id="pickupText">Pickup: --</p>
 
-<input id="drop" placeholder="Enter Drop Location">
+<label>🗺️ <b>Neeche Map par click karke Drop Location chunein:</b></label>
+<div id="map"></div>
+<p id="dropText">Drop: --</p>
 
-<button onclick="calculateFare()">💰 Calculate Fare</button>
+<button onclick="calculateFare()">💰 2. Calculate Distance & Fare</button>
 
 <p id="distanceText">Distance: --</p>
 <p id="fareText">Fare: --</p>
 
-<button onclick="bookRide()">✅ Book Ride</button>
+<button onclick="bookRide()" style="background-color: #008CBA;">✅ 3. Book Ride</button>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGq5g3zt23YkCmD81a-HrZq6effxmFPa0&libraries=places"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGq5g3zt23YkCmD81a-HrZq6effxmFPa0&callback=initMap" async defer></script>
 
 <script src="app.js"></script>
 
