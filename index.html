@@ -1,181 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GoBike Pro - Complete Cloud Platform</title>
-  
-  <script>
-    window.onerror = function(msg, url, line) {
-      alert("⚠️ System Error Detected:\n\nMessage: " + msg + "\nLine: " + line);
-      return false;
-    };
-  </script>
-  
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#FFDD00">
-  
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-  <style>
-    #map { height: 260px; width: 100%; border-radius: 16px; margin-bottom: 16px; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    #driverMap { height: 200px; width: 100%; border-radius: 16px; z-index: 10; box-shadow: inset 0 2px 8px rgba(0,0,0,0.1); }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-  </style>
-</head>
-<body class="bg-gray-50 font-sans text-gray-900 m-0 p-0 no-scrollbar select-none">
-
-  <div id="roleSelection" class="flex flex-col items-center justify-center min-h-screen p-6 bg-yellow-400">
-    <div class="text-center mb-8">
-      <h1 class="text-4xl font-extrabold text-black tracking-tight mb-2">🏍️ GoBike Pro</h1>
-      <p class="text-sm font-medium text-gray-800">Production Ready Mobile Cloud Network</p>
-    </div>
-    
-    <div class="w-full max-w-xs space-y-4">
-      <button onclick="openPortal('rider')" class="w-full bg-black text-white py-3.5 rounded-2xl font-bold shadow-xl active:scale-95 transition-all text-center block cursor-pointer">
-        Rider Portal (Book Bike)
-      </button>
-      <button onclick="openPortal('driver')" class="w-full bg-white text-black py-3.5 rounded-2xl font-bold shadow-xl active:scale-95 transition-all text-center block cursor-pointer">
-        Driver Portal (Captain)
-      </button>
-      <button onclick="openPortal('admin')" class="w-full bg-gray-900 text-white py-3.5 rounded-2xl font-bold shadow-xl active:scale-95 transition-all text-center block cursor-pointer">
-        Admin Control Dashboard
-      </button>
-    </div>
-    <div class="absolute bottom-4 text-xs font-semibold text-gray-700">Powered by GitHub Pages & Firebase</div>
-  </div>
-
-
-  <div id="riderPortal" class="hidden min-h-screen p-4 flex flex-col">
-    <header class="flex items-center mb-4">
-      <button onclick="goBack()" class="bg-white p-2 rounded-xl shadow-md text-sm font-bold text-gray-700 mr-3">← Menu</button>
-      <h2 class="text-2xl font-bold text-gray-800">📍 Ride Booking</h2>
-    </header>
-
-    <div id="map"></div>
-
-    <div class="bg-white p-5 rounded-2xl shadow-xl space-y-3 mb-4 border border-gray-100">
-      <div>
-        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Rider Information</label>
-        <input type="text" id="rName" placeholder="Enter Full Name" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-500 text-sm font-medium">
-      </div>
-      <div>
-        <input type="tel" id="rPhone" placeholder="Enter Mobile Number" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-500 text-sm font-medium">
-      </div>
-      
-      <div class="flex justify-between items-center py-2 px-1 border-t border-b border-gray-100 my-2">
-        <span class="text-sm font-semibold text-gray-500">Estimated Total Fare:</span>
-        <span class="text-xl font-extrabold text-green-600" id="estFare">₹0.00</span>
-      </div>
-
-      <button onclick="requestRide()" id="bookBtn" class="w-full bg-yellow-400 text-black font-extrabold py-3.5 rounded-xl shadow-md active:scale-95 transition-all text-sm uppercase tracking-wide">
-        ⚡ Request Live Booking
-      </button>
-    </div>
-
-    <div id="riderStatusBox" class="p-4 bg-gray-900 text-white rounded-2xl hidden font-semibold text-center text-sm shadow-xl animate-pulse">
-      Searching nearby active captains...
-    </div>
-  </div>
-
-
-  <div id="driverPortal" class="hidden min-h-screen p-4 flex flex-col">
-    <header class="flex items-center mb-4">
-      <button onclick="goBack()" class="bg-white p-2 rounded-xl shadow-md text-sm font-bold text-gray-700 mr-3">← Menu</button>
-      <h2 class="text-2xl font-bold text-gray-800">🏍️ Captain Room</h2>
-    </header>
-
-    <div class="bg-white p-4 rounded-2xl shadow-md mb-4 border border-gray-100 flex justify-between items-center">
-      <div>
-        <p class="text-xs font-bold text-gray-400 uppercase">Verification Profile</p>
-        <h4 id="vStatusText" class="text-sm font-black uppercase text-orange-600 mt-0.5">Checking Database...</h4>
-      </div>
-      <div id="activeIndicator" class="w-3 h-3 rounded-full bg-gray-300"></div>
-    </div>
-
-    <div id="kycForm" class="bg-white p-5 rounded-2xl shadow-xl border border-gray-100 hidden space-y-3">
-      <div class="bg-red-50 p-3 rounded-xl border border-red-100 mb-2">
-        <p class="text-xs text-red-700 font-bold leading-relaxed">⚠️ Mandatory System Verification: Documents upload authorization status pending.</p>
-      </div>
-      <input type="text" id="dName" placeholder="Full Registered Name" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium">
-      <input type="text" id="dVehicle" placeholder="Vehicle Plate Number (e.g. DL 3C XX 0000)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium">
-      <input type="text" id="dAadhaar" placeholder="Enter Identity Document Placeholder Token" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium">
-      <button onclick="submitKyc()" class="w-full bg-black text-white font-bold py-3 rounded-xl text-sm active:scale-95 transition-all">
-        Upload Registration Profile
-      </button>
-    </div>
-
-    <div id="driverActiveConsole" class="hidden flex-1 flex flex-col space-y-4">
-      <div class="grid grid-cols-3 gap-2 bg-gradient-to-br from-gray-900 to-black p-4 rounded-2xl text-white shadow-xl border border-gray-800">
-        <div class="text-center border-r border-gray-800">
-          <p class="text-[10px] font-bold text-gray-400 uppercase">Net Earnings</p>
-          <h3 class="text-lg font-black text-yellow-400 mt-1" id="capTodayEarning">₹0.00</h3>
-        </div>
-        <div class="text-center border-r border-gray-800">
-          <p class="text-[10px] font-bold text-gray-400 uppercase">Rides Done</p>
-          <h3 class="text-lg font-black text-white mt-1" id="capTotalRides">0</h3>
-        </div>
-        <div class="text-center">
-          <p class="text-[10px] font-bold text-gray-400 uppercase">Rating</p>
-          <h3 class="text-lg font-black text-green-400 mt-1">⭐ 4.9</h3>
-        </div>
-      </div>
-
-      <div class="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-gray-100">
-        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Radar Duty Mode</span>
-        <button onclick="toggleDuty()" id="dutyBtn" class="bg-green-600 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider active:scale-95 transition-all shadow-md">
-          Go Online
-        </button>
-      </div>
-
-      <div id="driverMapContainer" class="hidden">
-        <div id="driverMap"></div>
-      </div>
-
-      <div id="driverJobAlert" class="bg-yellow-400 p-5 rounded-2xl shadow-2xl border-2 border-black hidden transform scale-100 transition-all my-auto">
-        <div class="flex justify-between items-center mb-3">
-          <h4 class="font-black text-base text-black uppercase tracking-tight">⚡ Flash Booking Request</h4>
-          <span class="bg-black text-white text-[10px] px-2 py-0.5 rounded font-black animate-pulse">NEARBY</span>
-        </div>
-        <div class="bg-white p-3 rounded-xl border border-yellow-500 mb-4">
-          <p id="jobDetails" class="text-xs font-bold text-gray-900 leading-relaxed">Loading client geospatial hash node...</p>
-        </div>
-        <button onclick="acceptRide()" class="w-full bg-black text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all">
-          Accept & Route Job
-        </button>
-      </div>
-      <div class="h-2"></div>
-    </div>
-  </div>
-
-
-  <div id="adminPortal" class="hidden min-h-screen p-4 flex flex-col">
-    <header class="flex items-center mb-5">
-      <button onclick="goBack()" class="bg-white p-2 rounded-xl shadow-md text-sm font-bold text-gray-700 mr-3">← Menu</button>
-      <h2 class="text-2xl font-bold text-gray-800">📊 Admin Core Control</h2>
-    </header>
-
-    <div class="grid grid-cols-2 gap-4 mb-6">
-      <div class="bg-white p-4 rounded-2xl shadow-md border border-gray-100">
-        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Net Commission</p>
-        <h3 class="text-2xl font-black text-green-600 mt-1" id="admWallet">₹0.00</h3>
-      </div>
-      <div class="bg-white p-4 rounded-2xl shadow-md border border-gray-100">
-        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Online Captains</p>
-        <h3 class="text-2xl font-black text-blue-600 mt-1" id="activeDriversCount">0</h3>
-      </div>
-    </div>
-
-    <div class="bg-white p-5 rounded-2xl shadow-xl border border-gray-100 flex-1 flex flex-col">
-      <h3 class="font-extrabold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center justify-between">
-        <span>📋 Document Verification Queue</span>
-        <span class="bg-orange-100 text-orange-700 text-xs px-2.5 py-0.5 rounded-full font-bold" id="queueBadge">0</span>
+>0</span>
       </h3>
       <div id="verificationQueue" class="space-y-3 flex-1 overflow-y-auto text-sm font-medium text-gray-400 text-center pt-8">
         No registrations matching verification state conditions.
@@ -421,3 +244,76 @@
           setTimeout(() => {
             if (confirm("Geofencing Notice: Arrived at destination. Process ride state compilation closure transaction?")) {
    
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoBike Pro</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* Basic styling taaki templates hidden rahein jab tak routing na ho */
+        .page-section { display: none; }
+        #mainMenu { display: block; }
+        #map { height: 250px; width: 100%; border-radius: 12px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <div id="mainMenu" class="page-section">
+        <h2>🏍️ GoBike Pro</h2>
+        <p>Production Ready Mobile Cloud Network</p>
+        
+        <button onclick="openPortal('rider')">Rider Portal (Book Bike)</button>
+        <button onclick="openPortal('driver')">Driver Portal (Captain)</button>
+        <button onclick="openPortal('admin')">Admin Control Dashboard</button>
+        
+        <footer>Powered by GitHub Pages & Firebase</footer>
+    </div>
+
+    <div id="riderPortal" class="page-section">
+        <button onclick="goBack()">← Menu</button>
+        <h3>📍 Ride Booking</h3>
+        
+        <div id="map"></div>
+
+        <div class="location-inputs" style="margin-bottom: 15px;">
+            <label>Pickup Location:</label>
+            <input type="text" id="pickupLocation" placeholder="E.g., Connaught Place" oninput="checkInputsForFare()">
+            
+            <br/><br/>
+            
+            <label>Drop Location:</label>
+            <input type="text" id="dropLocation" placeholder="E.g., Noida Sector 62" oninput="checkInputsForFare()">
+        </div>
+
+        <div class="rider-info">
+            <h4>RIDER INFORMATION</h4>
+            <input type="text" id="fullName" placeholder="Enter Full Name">
+            <input type="text" id="mobileNumber" placeholder="Enter Mobile Number">
+        </div>
+
+        <div class="fare-section">
+            <span>Estimated Total Fare:</span>
+            <strong id="totalFareDisplay" style="color: green; font-size: 1.5rem;">₹0.00</strong>
+        </div>
+
+        <button id="requestBookingBtn" onclick="requestLiveBooking()">REQUEST LIVE BOOKING</button>
+    </div>
+
+    <div id="driverPortal" class="page-section">
+        <button onclick="goBack()">← Menu</button>
+        <h3>🏍️ Captain Room</h3>
+        <div id="driverStatus">STATUS: VERIFIED</div>
+    </div>
+
+    <div id="adminPortal" class="page-section">
+        <button onclick="goBack()">← Menu</button>
+        <h3>📊 Admin Core Control</h3>
+        <p>Net Commission: ₹0.00</p>
+    </div>
+
+    <script href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
