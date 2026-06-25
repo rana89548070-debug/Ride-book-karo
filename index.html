@@ -9,7 +9,7 @@
         .page-section { display: none; }
         #mainMenu { display: block; }
         #map, #driverMap { height: 300px; width: 100%; border-radius: 12px; margin-bottom: 15px; border: 2px solid #ccc; }
-        #driverMap { border-color: #ffc107; display: none; } /* Captain Map highlighted with Yellow/Amber border */
+        #driverMap { border-color: #ffc107; display: none; } 
         input { display: block; margin: 10px 0; padding: 8px; width: 90%; border-radius: 6px; border: 1px solid #aaa; }
         button { padding: 10px 15px; margin: 5px; cursor: pointer; border-radius: 6px; font-weight: bold; }
         .btn-primary { background-color: #007bff; color: white; border: none; }
@@ -24,6 +24,8 @@
         .sms-toast { display: none; position: fixed; top: 15px; left: 5%; width: 84%; background: #222; color: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10000; border-left: 5px solid #ffc107; font-family: sans-serif; }
         .sms-header { font-size: 0.75rem; color: #aaa; margin-bottom: 5px; display: flex; justify-content: space-between; }
         .sms-body { font-size: 0.95rem; font-weight: bold; }
+        
+        .wallet-card { background: #e8f5e9; border: 1px solid #c8e6c9; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
@@ -61,7 +63,7 @@
             <input type="text" id="pickupLocation" placeholder="Click on map to select pickup" readonly>
             
             <label>Drop Address:</label>
-            <input type="text" id="dropLocation" placeholder="Click on map to select drop" readonly>
+            <input text" id="dropLocation" placeholder="Click on map to select drop" readonly>
         </div>
 
         <div class="rider-info">
@@ -81,8 +83,13 @@
     <div id="driverPortal" class="page-section">
         <button onclick="goBack()">← Menu</button>
         <h3>🏍️ Captain Room</h3>
-        <div id="driverStatus" style="font-weight: bold; margin-bottom: 10px;">STATUS: VERIFIED</div>
+        
+        <div class="wallet-card">
+            <span>💰 Captain Wallet Balance:</span>
+            <strong id="driverWalletDisplay" style="color: #2e7d32; font-size: 1.2rem;">₹0.00</strong>
+        </div>
 
+        <div id="driverStatus" style="font-weight: bold; margin-bottom: 10px;">STATUS: VERIFIED</div>
         <button id="dutyBtn" class="btn-danger" style="width: 95%; margin: 10px 0;" onclick="toggleDuty()">GO ONLINE</button>
 
         <div id="driverMap"></div>
@@ -124,7 +131,7 @@
             <p style="margin: 6px 0;"><strong>Gross Fare Collected:</strong> <span id="billFare" style="float: right; font-weight: bold;">₹0.00</span></p>
             <p style="margin: 6px 0; color: #dc3545;"><strong>Platform Commission Deducted (20%):</strong> <span id="billCommission" style="float: right;">-₹0.00</span></p>
             <hr style="border: 0; border-top: 1px dashed #aaa; margin: 10px 0;">
-            <p style="margin: 10px 0; font-size: 1.2rem; color: #28a745;"><strong>Captain Net Cash Earnings:</strong> <span id="billEarnings" style="float: right; font-weight: bold;">₹0.00</span></p>
+            <p style="margin: 10px 0; font-size: 1.2rem; color: #28a745;"><strong>Captain Net Wallet Credit:</strong> <span id="billEarnings" style="float: right; font-weight: bold;">₹0.00</span></p>
             
             <h5 style="margin: 20px 0 8px 0; color: #444;">💰 Select Payment Mode:</h5>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -133,10 +140,9 @@
             </div>
 
             <div id="qrSection" style="display: none; text-align: center; margin-bottom: 15px; padding: 12px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px;">
-                <p style="margin: 0 0 8px 0; font-size: 0.85rem; color: #666; font-weight: bold;">Scan this QR to pay instantly via UPI</p>
-                <div style="width: 130px; height: 130px; background: #222; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: #ffc107; font-size: 0.8rem; font-weight: bold; border-radius: 6px; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                    [ DYNAMIC QR ]
-                </div>
+                <p style="margin: 0 0 8px 0; font-size: 0.85rem; color: #007bff; font-weight: bold;">👉 Scan QR to Pay Gross Fare:</p>
+                <img id="dynamicQrCode" src="" alt="Dynamic UPI QR" style="width: 160px; height: 160px; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border-radius: 6px; display: block; margin: 0 auto;">
+                <p id="qrFareText" style="margin: 8px 0 0 0; font-size: 0.9rem; font-weight: bold; color: #28a745;">Amount: ₹0.00</p>
             </div>
 
             <button class="btn-success" style="width: 100%; font-size: 1.1rem; padding: 12px;" onclick="collectPaymentAndReset()">COLLECT PAYMENT & SETTLE</button>
@@ -155,5 +161,4 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="app.js"></script>
 </body>
-               </html>
-               
+</html>
