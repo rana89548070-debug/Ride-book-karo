@@ -1,140 +1,4 @@
-let map;
-let pickupMarker = null;
-let dropMarker = null;
-
-let pickupLat = null, pickupLng = null;
-let dropLat = null, dropLng = null;
-let currentEstimatedFare = 0;
-let currentDistanceText = "";
-
-// Session Storage references for Multi-login simulation
-let currentRider = null;
-let currentCaptain = null;
-let pollingInterval = null;
-
-// 1. INITIALIZE MAP
-function initMap() {
-  map = new google.maps.Map(document.getElementById("map"), {
-    center: { lat: 28.6139, lng: 77.2090 }, // Delhi Center default
-    zoom: 12,
-  });
-
-  map.addListener("click", (e) => {
-    if (!pickupLat) {
-      alert("📌 Pehle Step 1 wala Live Pickup Button dabayein!");
-      return;
-    }
-    dropLat = e.latLng.lat();
-    dropLng = e.latLng.lng();
-
-    if (dropMarker) dropMarker.setMap(null);
-    dropMarker = new google.maps.Marker({ position: e.latLng, map: map, label: "B" });
-
-    document.getElementById("txtDrop").innerText = "Drop: Fetching Address...";
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${dropLat}&lon=${dropLng}`)
-      .then(r => r.json()).then(data => {
-        document.getElementById("txtDrop").innerText = "Drop: " + (data.display_name || "Custom Drop Point").split(',').slice(0,3).join(',');
-      }).catch(() => {
-        document.getElementById("txtDrop").innerText = `Drop: ${dropLat.toFixed(4)}, ${dropLng.toFixed(4)}`;
-      });
-  });
-}
-
-// 2. GET LIVE LOCATION VIA GPS
-function getPickupLocation() {
-  document.getElementById("txtPickup").innerText = "📍 Tracking GPS Coordinate...";
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      pickupLat = pos.coords.latitude;
-      pickupLng = pos.coords.longitude;
-      let loc = { lat: pickupLat, lng: pickupLng };
-      map.setCenter(loc);
-      map.setZoom(15);
-
-      if (pickupMarker) pickupMarker.setMap(null);
-      pickupMarker = new google.maps.Marker({ position: loc, map: map, label: "A" });
-
-      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pickupLat}&lon=${pickupLng}`)
-        .then(r => r.json()).then(data => {
-          document.getElementById("txtPickup").innerText = "Pickup: " + (data.display_name || "Your GPS Location").split(',').slice(0,3).join(',');
-        }).catch(() => {
-          document.getElementById("txtPickup").innerText = `Pickup: ${pickupLat.toFixed(4)}, ${pickupLng.toFixed(4)}`;
-        });
-    }, () => alert("❌ GPS Permission Denied. Please enable location."));
-  }
-}
-
-// 3. FARE ENGINE (BIKE SPECIFIC RATES)
-function calculateBikeFare() {
-  if (!pickupLat || !dropLat) {
-    alert("📌 Pickup and Drop select hona mandatory hai!");
-    return;
-  }
-  
-  // Haversine Formula for Mathematical Distance Calculation
-  const R = 6371;
-  const dLat = (dropLat - pickupLat) * Math.PI / 180;
-  const dLon = (dropLng - pickupLng) * Math.PI / 180;
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(pickupLat*Math.PI/180) * Math.cos(dropLat*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  let realKm = (R * c) * 1.35; // 1.35 Multiplier for real curved road paths
-  if(realKm < 1) realKm = 1;
-
-  // Bike Taxi Pricing Rules (Cheap Economy Rates)
-  const basePrice = 20; // First 2 Kms entry fee
-  const perKmRate = 8;  // 8 Rs per KM for Bike Taxi
-  currentEstimatedFare = Math.round(basePrice + (realKm * perKmRate));
-  currentDistanceText = realKm.toFixed(1) + " KM";
-
-  document.getElementById("txtDistance").innerText = "Distance: " + currentDistanceText;
-  document.getElementById("txtFare").innerText = "Estimated Bike Fare: ₹" + currentEstimatedFare;
-}
-
-// 4. DATABASE SYNC & ROUTING CONTROLLERS
-function switchView(id) {
-  document.getElementById("portalSelectionScreen").classList.add("hidden");
-  document.getElementById("riderLoginPortal").classList.add("hidden");
-  document.getElementById("captainLoginPortal").classList.add("hidden");
-  document.getElementById("riderDashboard").classList.add("hidden");
-  document.getElementById("captainDashboard").classList.add("hidden");
-  document.getElementById("adminPortal").classList.add("hidden");
-
-  document.getElementById(id).classList.remove("hidden");
-  if(id === 'adminPortal') loadAdminDashboard();
-}
-
-function loginRider() {
-  let name = document.getElementById("riderName").value.trim();
-  let phone = document.getElementById("riderPhone").value.trim();
-  if(!name || !phone) return alert("All fields are mandatory");
-  currentRider = { name, phone };
-  document.getElementById("lblRiderName").innerText = name;
-  switchView("riderDashboard");
-  startEnginePoller();
-}
-
-function loginCaptain() {
-  let name = document.getElementById("captainName").value.trim();
-  let bike = document.getElementById("captainVehicle").value.trim();
-  if(!name || !bike) return alert("All fields are mandatory");
-  
-  let capId = "CAP-" + phoneHash(name);
-  currentCaptain = { id: capId, name, bike };
-  
-  // Register Captain in Database
-  let caps = JSON.parse(localStorage.getItem("rides_captains")) || {};
-  if(!caps[capId]) caps[capId] = { balance: 0 };
-  localStorage.setItem("rides_captains", JSON.stringify(caps));
-
-  document.getElementById("lblCaptainName").innerText = name + ` (${bike})`;
-  updateCaptainWalletUI();
-  switchView("captainDashboard");
-  startEnginePoller();
-}
-
-function updateCaptainWalletUI() {
-  if(!currentCaptain) return;
-  let caps = JSON.parse(localStorage.getItem("rides_captains")) || {};
+aps = JSON.parse(localStorage.getItem("rides_captains")) || {};
   let balance = caps[currentCaptain.id] ? caps[currentCaptain.id].balance : 0;
   document.getElementById("lblCaptainWallet").innerText = "₹" + balance.toFixed(2);
 }
@@ -379,4 +243,97 @@ function phoneHash(str) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
   return Math.abs(hash);
+}
+// Global Map Variable
+let map;
+
+// 1. ROUTING LOGIC: URL ke hash (#) ke mutabik page show/hide karna
+function handleRouting() {
+    const hash = window.location.hash;
+
+    // Sabhi sections ko pehle hide kar dein
+    document.querySelectorAll('.page-section').forEach(section => {
+        section.style.display = 'none';
+    });
+
+    // Hash check karke sahi page dikhayein
+    if (hash === '#rider') {
+        document.getElementById('riderPortal').style.display = 'block';
+        initializeMap(); // Rider page khulte hi map init ya reset hoga
+    } else if (hash === '#driver') {
+        document.getElementById('driverPortal').style.display = 'block';
+    } else if (hash === '#admin') {
+        document.getElementById('adminPortal').style.display = 'block';
+    } else {
+        // Agar koi hash nahi hai toh main dashboard dikhayein
+        document.getElementById('mainMenu').style.display = 'block';
+    }
+}
+
+// Buttons ke click par URL ka hash change karne ke liye function
+function openPortal(portalName) {
+    window.location.hash = portalName;
+}
+
+// Back button ke liye function
+fn goBack() {
+    window.location.hash = ''; // Home par le jayega
+}
+
+// Page load aur URL change (Refresh) dono events ko track karein
+window.addEventListener('hashchange', handleRouting);
+window.addEventListener('load', handleRouting);
+
+
+// 2. FARE CALCULATION LOGIC: Jab tak dono inputs na bhare hon, price calculate nahi hogi
+function checkInputsForFare() {
+    const pickup = document.getElementById('pickupLocation').value.trim();
+    const drop = document.getElementById('dropLocation').value.trim();
+    const fareDisplay = document.getElementById('totalFareDisplay');
+
+    if (pickup === "" || drop === "") {
+        fareDisplay.innerText = "₹0.00"; // Agar ek bhi field khali hai toh 0
+        return;
+    }
+
+    // Agar dono bhare hain, tabhi fare calculate karein (Abhi ke liye base rule lagaya hai)
+    // Is jagah aap apni real distance calculation logic dal sakte hain
+    const baseFare = 40;
+    const dynamicSurge = Math.floor(Math.random() * 30) + 10; // Random price fluctuating tabhi hogi jab input chalega
+    const finalFare = baseFare + dynamicSurge;
+
+    fareDisplay.innerText = `₹${finalFare}.00`;
+}
+
+
+// 3. MAP FIX LOGIC: Blank gray screen map issue ka ilaaj
+function initializeMap() {
+    // Agar map pehle se bana hua hai toh use recreate na karein, bas size standard karein
+    if (!map) {
+        // Default coordinates New Delhi ke hain
+        map = L.map('map').setView([28.6139, 77.2090], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+    }
+
+    // Sabse important step: Container display hone ke thodi der baad map resize update karein
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 300);
+}
+
+// Live Booking Request Trigger
+function requestLiveBooking() {
+    const name = document.getElementById('fullName').value;
+    const phone = document.getElementById('mobileNumber').value;
+    const fare = document.getElementById('totalFareDisplay').innerText;
+
+    if(!name || !phone || fare === "₹0.00") {
+        alert("Kripya details aur locations poori bharein!");
+        return;
+    }
+    
+    alert(`Booking Request Sent! Fare: ${fare}`);
+    // Yahan aap apna Firebase database push logic code add kar sakte hain.
 }
