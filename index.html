@@ -3,48 +3,164 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ride Book Karo - Free Version</title>
+  <title>Rapido Bike Clone - Unified Engine</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; }
-    input, button { margin-bottom: 12px; padding: 12px; width: 100%; max-width: 360px; display: block; box-sizing: border-box; border-radius: 6px; border: 1px solid #ccc; }
-    button { background-color: #4CAF50; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 16px; }
-    button:hover { background-color: #45a049; }
-    p { margin: 5px 0 15px 0; font-weight: bold; color: #333; }
+    :root { --yellow: #FFDD00; --dark: #1A1A1A; --gray: #f4f4f4; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: var(--gray); color: var(--dark); }
+    header { background-color: var(--dark); color: var(--yellow); padding: 15px; text-align: center; font-weight: bold; font-size: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     
-    #map {
-      width: 100%;
-      max-width: 360px;
-      height: 300px;
-      margin-bottom: 15px;
-      border: 2px solid #ddd;
-      border-radius: 8px;
-    }
+    .container { max-width: 500px; margin: 20px auto; padding: 15px; box-sizing: border-box; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    
+    /* Login Screen Buttons */
+    .role-btn { background-color: var(--yellow); color: var(--dark); border: 2px solid var(--dark); padding: 15px; font-size: 18px; font-weight: bold; width: 100%; border-radius: 8px; margin-bottom: 12px; cursor: pointer; text-align: center; }
+    .role-btn:hover { background-color: var(--dark); color: var(--yellow); }
+    
+    input, select, button { width: 100%; padding: 12px; margin-bottom: 12px; box-sizing: border-box; border-radius: 6px; border: 1px solid #ccc; font-size: 15px; }
+    .btn-main { background-color: var(--dark); color: var(--yellow); font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; }
+    .btn-main:hover { background-color: #333; }
+    .btn-yellow { background-color: var(--yellow); color: var(--dark); font-weight: bold; border: 1px solid var(--dark); cursor: pointer; }
+    
+    #map { width: 100%; height: 250px; margin-bottom: 15px; border: 2px solid var(--dark); border-radius: 8px; }
+    .hidden { display: none; }
+    .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; }
+    
+    /* Flashy Notification Alert for Driver */
+    .popup-alert { background: #fff3cd; border: 2px solid #ffeeba; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 15px; animation: blink 1s infinite alternate; }
+    @keyframes blink { from { box-shadow: 0 0 5px red; } to { box-shadow: 0 0 20px red; } }
+    
+    .wallet-box { background: var(--dark); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
+    .wallet-box h3 { color: var(--yellow); margin: 0; }
+    
+    .back-link { display: block; text-align: center; margin-top: 15px; color: #555; text-decoration: none; font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
 
-<h2>🚖 Book Your Ride (Free Engine)</h2>
+<header>⚡ RAPIDO BIKE TAXI ENGINE</header>
 
-<input id="name" placeholder="Apna Name Likhein">
-<input id="phone" placeholder="Apna Phone Number">
+<div class="container">
 
-<button onclick="getPickup()">📍 1. Get Live Pickup Location</button>
-<p id="pickupText">Pickup: --</p>
+  <div id="portalSelectionScreen" class="card">
+    <h2 style="text-align:center; margin-top:0;">Select Your Role</h2>
+    <button class="role-btn" onclick="switchView('riderLoginPortal')">🙋‍♂️ Rider (Book Bike)</button>
+    <button class="role-btn" onclick="switchView('captainLoginPortal')">🏍️ Captain (Driver App)</button>
+    <button class="role-btn" onclick="switchView('adminPortal')">🎛️ Admin Dashboard</button>
+  </div>
 
-<label>🗺️ <b>Neeche Map par click karke Drop Location chunein:</b></label>
-<div id="map"></div>
-<p id="dropText">Drop: --</p>
+  <div id="riderLoginPortal" class="card hidden">
+    <h3>Rider Login</h3>
+    <input id="riderName" placeholder="Enter Full Name">
+    <input id="riderPhone" placeholder="Enter Mobile Number">
+    <button class="btn-main" onclick="loginRider()">Proceed to Book</button>
+    <a class="back-link" onclick="logoutAll()">← Back to Home</a>
+  </div>
 
-<button onclick="calculateFare()" style="background-color: #f39c12;">💰 2. Calculate Distance & Fare</button>
+  <div id="captainLoginPortal" class="card hidden">
+    <h3>Captain Dashboard Login</h3>
+    <input id="captainName" placeholder="Enter Driver Name">
+    <input id="captainVehicle" placeholder="Bike Model & Number (e.g. Splendor - DL3C...)">
+    <button class="btn-main" onclick="loginCaptain()">Go Online</button>
+    <a class="back-link" onclick="logoutAll()">← Back to Home</a>
+  </div>
 
-<p id="distanceText">Distance: --</p>
-<p id="fareText">Fare: --</p>
+  <div id="riderDashboard" class="card hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0;">Welcome, <span id="lblRiderName">User</span></h3>
+      <button style="width:auto; padding:5px 10px; margin:0;" onclick="logoutAll()">Logout</button>
+    </div>
+    <hr style="margin: 15px 0;">
+    
+    <button class="btn-yellow" onclick="getPickupLocation()">📍 Step 1: Set Live Pickup</button>
+    <p id="txtPickup">Pickup Address: --</p>
+    
+    <label>🗺️ <b>Map par Click karke Drop Location chunein:</b></label>
+    <div id="map"></div>
+    <p id="txtDrop">Drop Address: --</p>
+    
+    <button class="btn-main" onclick="calculateBikeFare()">💰 Step 2: Check Distance & Fare</button>
+    <p id="txtDistance">Distance: --</p>
+    <p id="txtFare" style="font-size:18px;">Estimated Fare: --</p>
+    
+    <label>Select Payment Method:</label>
+    <select id="riderPaymentMethod">
+      <option value="Cash/UPI to Captain">Cash/UPI to Captain</option>
+      <option value="Paid Online (Wallet)">Pay Now (Online Wallet)</option>
+    </select>
+    
+    <button class="btn-yellow" style="background-color:var(--yellow);" onclick="requestBikeRide()">🏍️ Step 3: Book Rapido Bike</button>
+    
+    <div id="riderStatusBox" class="hidden" style="margin-top:15px; padding:15px; background:#e2f0d9; border-radius:8px;">
+      <h4 style="margin:0; color:#385723;">Ride Status Tracking</h4>
+      <p id="txtTrackStatus">Status: Searching for nearest Captain...</p>
+      <div id="txtTrackCaptainInfo" style="font-weight:normal; margin-bottom:5px;"></div>
+      <div id="txtTrackOtp" style="font-size:20px; font-weight:bold; color:red; display:none;">OTP: ----</div>
+    </div>
+  </div>
 
-<button onclick="bookRide()" style="background-color: #008CBA;">✅ 3. Book Ride</button>
+  <div id="captainDashboard" class="card hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0;">Captain: <span id="lblCaptainName">Driver</span></h3>
+      <button style="width:auto; padding:5px 10px; margin:0;" onclick="logoutAll()">Go Offline</button>
+    </div>
+    
+    <div class="wallet-box" style="margin-top:15px;">
+      <p style="margin:0; font-size:14px; color:#aaa;">Your Earnings (Net 95%)</p>
+      <h3 id="lblCaptainWallet">₹0.00</h3>
+      <button class="btn-yellow" style="margin-top:10px; padding:6px;" onclick="withdrawMoney('captain')">💸 Withdraw Earnings</button>
+    </div>
 
-<!-- GOOGLE MAPS SCRIPT: Isme apni chalne wali API key hi rehne dena -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCpCYltum_43pjI5u_6PTs87Rr0F3ySdlg&callback=initMap" async defer></script>
+    <div id="incomingRequestAlert" class="popup-alert hidden">
+      <h4 style="margin:0; font-size:16px;">🔥 LIVE RIDE REQUEST RECEIVED!</h4>
+      <p id="txtIncomingDetails" style="margin:5px 0 10px 0;">Customer: --<br>Fare: --</p>
+      <div style="display:flex; gap:10px;">
+        <button class="btn-main" style="background:green; color:white; margin:0;" onclick="acceptRide()">🟢 Accept Ride</button>
+        <button class="btn-main" style="background:red; color:white; margin:0;" onclick="rejectRide()">🔴 Reject</button>
+      </div>
+    </div>
 
+    <div id="captainActiveJobBox" class="hidden" style="padding:15px; background:#fff; border:2px dashed var(--dark); border-radius:8px;">
+      <h4 style="margin:0;">🚨 Active Trip Progress</h4>
+      <p id="txtJobDetails">Details load ho rahe hain...</p>
+      
+      <div id="captainOtpBox">
+        <input id="txtVerifyOtp" placeholder="Enter Customer 4-Digit OTP" type="number">
+        <button class="btn-main" onclick="startTripWithOtp()">⚡ Start Journey</button>
+      </div>
+      
+      <button id="btnEndTrip" class="btn-yellow hidden" style="background-color:red; color:white;" onclick="endTripAndDeduct()">🏁 End Ride (Reach Destination)</button>
+    </div>
+  </div>
+
+  <div id="adminPortal" class="card hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+      <h3 style="margin:0;">🎛️ Master Admin Control</h3>
+      <button style="width:auto; padding:5px 10px; margin:0;" onclick="switchView('portalSelectionScreen')">Close</button>
+    </div>
+
+    <div class="wallet-box">
+      <p style="margin:0; font-size:14px; color:#aaa;">Admin Total Revenue (5% Commission)</p>
+      <h3 id="lblAdminWallet">₹0.00</h3>
+      <button class="btn-yellow" style="margin-top:10px; padding:6px;" onclick="withdrawMoney('admin')">💸 Withdraw Admin Fund</button>
+    </div>
+
+    <h4>📊 Live System Control Panel</h4>
+    <div style="font-size:14px; background:#eee; padding:10px; border-radius:6px; margin-bottom:15px;">
+      <b>Total Drivers Tracked:</b> <span id="statDrivers">0</span><br>
+      <b>Total Rides Booked:</b> <span id="statRides">0</span>
+    </div>
+
+    <h4>📋 Master Rides Database History (Key: "rides")</h4>
+    <div id="adminRidesLog" style="font-size:12px; overflow-y:auto; max-height:200px; border:1px solid #ccc; padding:5px; background:#fafafa;">
+      No history available.
+    </div>
+    
+    <button class="btn-main" style="background-color:#c0392b; color:white; margin-top:15px;" onclick="resetSystemDatabase()">🗑️ Hard Reset Whole System</button>
+  </div>
+
+</div>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=APNI_ASLI_API_KEY&callback=initMap" async defer></script>
 <script src="app.js"></script>
 
 </body>
