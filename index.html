@@ -6,10 +6,11 @@
     <title>GoBike Pro</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        /* Basic styling taaki templates hidden rahein jab tak routing na ho */
         .page-section { display: none; }
         #mainMenu { display: block; }
         #map { height: 250px; width: 100%; border-radius: 12px; margin-bottom: 15px; }
+        input { display: block; margin: 10px 0; padding: 8px; width: 90%; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -21,8 +22,6 @@
         <button onclick="openPortal('rider')">Rider Portal (Book Bike)</button>
         <button onclick="openPortal('driver')">Driver Portal (Captain)</button>
         <button onclick="openPortal('admin')">Admin Control Dashboard</button>
-        
-        <footer>Powered by GitHub Pages & Firebase</footer>
     </div>
 
     <div id="riderPortal" class="page-section">
@@ -31,14 +30,12 @@
         
         <div id="map"></div>
 
-        <div class="location-inputs" style="margin-bottom: 15px;">
+        <div class="location-inputs">
             <label>Pickup Location:</label>
-            <input type="text" id="pickupLocation" placeholder="E.g., Connaught Place" oninput="checkInputsForFare()">
-            
-            <br/><br/>
+            <input type="text" id="pickupLocation" placeholder="E.g., Rudrapur SIDCUL" oninput="checkInputsForFare()">
             
             <label>Drop Location:</label>
-            <input type="text" id="dropLocation" placeholder="E.g., Noida Sector 62" oninput="checkInputsForFare()">
+            <input type="text" id="dropLocation" placeholder="E.g., Railway Station" oninput="checkInputsForFare()">
         </div>
 
         <div class="rider-info">
@@ -47,8 +44,8 @@
             <input type="text" id="mobileNumber" placeholder="Enter Mobile Number">
         </div>
 
-        <div class="fare-section">
-            <span>Estimated Total Fare:</span>
+        <div class="fare-section" style="margin: 15px 0;">
+            <span>Estimated Total Fare: </span>
             <strong id="totalFareDisplay" style="color: green; font-size: 1.5rem;">₹0.00</strong>
         </div>
 
@@ -67,7 +64,7 @@
         <p>Net Commission: ₹0.00</p>
     </div>
 
-    <script href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
