@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoBike Pro</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* Basic styling taaki templates hidden rahein jab tak routing na ho */
+        .page-section { display: none; }
+        #mainMenu { display: block; }
+        #map { height: 250px; width: 100%; border-radius: 12px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <div id="mainMenu" class="page-section">
+        <h2>🏍️ GoBike Pro</h2>
+        <p>Production Ready Mobile Cloud Network</p>
+        
+        <button onclick="openPortal('rider')">Rider Portal (Book Bike)</button>
+        <button onclick="openPortal('driver')">Driver Portal (Captain)</button>
+        <button onclick="openPortal('admin')">Admin Control Dashboard</button>
+        
+        <footer>Powered by GitHub Pages & Firebase</footer>
+    </div>
+
+    <div id="riderPortal" class="page-section">
+        <button onclick="goBack()">← Menu</button>
+        <h3>📍 Ride Booking</h3>
+        
+        <div id="map"></div>
+
+        <div class="location-inputs" style="margin-bottom: 15px;">
+            <label>Pickup Location:</label>
+            <input type="text" id="pickupLocation" placeholder="E.g., Connaught Place" oninput="checkInputsForFare()">
+            
+            <br/><br/>
+            
+            <label>Drop Location:</label>
+            <input type="text" id="dropLocation" placeholder="E.g., Noida Sector 62" oninput="checkInputsForFare()">
+        </div>
+
+        <div class="rider-info">
+            <h4>RIDER INFORMATION</h4>
+            <input type="text" id="fullName" placeholder="Enter Full Name">
+            <input type="text" id="mobileNumber" placeholder="Enter Mobile Number">
+        </div>
+
+        <div class="fare-section">
+            <span>Estimated Total Fare:</span>
+            <strong id="totalFareDisplay" style="color: green; font-size: 1.5rem;">₹0.00</strong>
+        </div>
+
+        <button id="requestBookingBtn" onclick="requestLiveBooking()">REQUEST LIVE BOOKING</button>
+    </div>
+
+    <div id="driverPortal" class="page-section">
+        <button onclick="goBack()">← Menu</button>
+        <h3>🏍️ Captain Room</h3>
+        <div id="driverStatus">STATUS: VERIFIED</div>
+    </div>
+
+    <div id="adminPortal" class="page-section">
+        <button onclick="goBack()">← Menu</button>
+        <h3>📊 Admin Core Control</h3>
+        <p>Net Commission: ₹0.00</p>
+    </div>
+
+    <script href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
