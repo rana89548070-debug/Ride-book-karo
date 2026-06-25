@@ -8,17 +8,17 @@ let dropLat = null;
 let dropLng = null;
 let totalFare = 0;
 
-// 1. WEB PAGE LOAD HOTE HI MAP INITIALIZE KARNA
+// 1. MAP INITIALIZE
 function initMap() {
   map = new google.maps.Map(document.getElementById("map"), {
-    center: { lat: 20.5937, lng: 78.9629 }, // India center
+    center: { lat: 20.5937, lng: 78.9629 }, // Shuru me India center dikhega
     zoom: 5,
   });
 
-  // MAP PAR CLICK KARNE KA LISTENER (Drop location select karne ke liye)
+  // Map click listener - Drop Location ke liye
   map.addListener("click", (mapsMouseEvent) => {
     if (pickupLat === null || pickupLng === null) {
-      alert("📌 Bhai, pehle upar wale '1. Get Live Pickup Location' button par click karke apni location fetch karo!");
+      alert("📌 Bhai, pehle upar wale '1. Get Live Pickup Location' button par click karo!");
       return;
     }
 
@@ -26,33 +26,30 @@ function initMap() {
     dropLat = clickedPos.lat();
     dropLng = clickedPos.lng();
 
-    if (dropMarker) {
-      dropMarker.setMap(null);
-    }
+    if (dropMarker) dropMarker.setMap(null);
 
     dropMarker = new google.maps.Marker({
       position: clickedPos,
       map: map,
-      title: "Drop Location",
       label: "D",
     });
 
-    // === GEOCODING LOGIC FOR DROP ===
+    // FREE GEOCORDER: OpenStreetMap se address nikalna (No Keys Required)
     document.getElementById("dropText").innerText = "Drop: Fetching address...";
-    const geocoder = new google.maps.Geocoder();
-    
-    geocoder.geocode({ location: clickedPos }, (results, status) => {
-      if (status === "OK" && results[0]) {
-        // Coordinates ki jagah real address text dikhayega
-        document.getElementById("dropText").innerText = "Drop: " + results[0].formatted_address;
-      } else {
-        document.getElementById("dropText").innerText = `Drop Selected: ${dropLat.toFixed(4)}, ${dropLng.toFixed(4)}`;
-      }
-    });
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${dropLat}&lon=${dropLng}`)
+      .then(res => res.json())
+      .then(data => {
+        let address = data.display_name || "Selected Location";
+        // Address ko thoda chota karke dikhane ke liye shuru ke 3 part liye
+        document.getElementById("dropText").innerText = "Drop: " + address.split(',').slice(0,3).join(',');
+      })
+      .catch(() => {
+        document.getElementById("dropText").innerText = `Drop: ${dropLat.toFixed(4)}, ${dropLng.toFixed(4)}`;
+      });
   });
 }
 
-// 2. LIVE LOCATION FETCH KARNE KA LOGIC
+// 2. LIVE PICKUP LOCATION FETCH KARNA
 function getPickup() {
   const pickupText = document.getElementById("pickupText");
   pickupText.innerText = "📍 Fetching location...";
@@ -67,101 +64,103 @@ function getPickup() {
         map.setCenter(myLocation);
         map.setZoom(15);
 
-        if (pickupMarker) {
-          pickupMarker.setMap(null);
-        }
+        if (pickupMarker) pickupMarker.setMap(null);
 
         pickupMarker = new google.maps.Marker({
           position: myLocation,
           map: map,
-          title: "Aapki Location",
           label: "P",
         });
 
-        // === GEOCODING LOGIC FOR PICKUP ===
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ location: myLocation }, (results, status) => {
-          if (status === "OK" && results[0]) {
-            // Live location coordinates ko real address me badla
-            pickupText.innerText = "Pickup: " + results[0].formatted_address;
-          } else {
+        // FREE GEOCORDER FOR PICKUP
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pickupLat}&lon=${pickupLng}`)
+          .then(res => res.json())
+          .then(data => {
+            let address = data.display_name || "Your Location";
+            pickupText.innerText = "Pickup: " + address.split(',').slice(0,3).join(',');
+          })
+          .catch(() => {
             pickupText.innerText = `Pickup: ${pickupLat.toFixed(4)}, ${pickupLng.toFixed(4)}`;
-          }
-        });
+          });
       },
       (error) => {
-        alert("❌ Location fetch nahi ho payi! Phone/Browser me permission allow karein.");
+        alert("❌ Browser me location permission 'Allow' karein!");
         pickupText.innerText = "Pickup: Permission Denied";
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   } else {
-    alert("❌ Geolocation is not supported by this browser.");
+    alert("❌ Aapka browser location support nahi karta.");
   }
 }
 
-// 3. FARE AUR DISTANCE CALCULATE KARNE KA LOGIC
+// 3. FARE CALCULATOR (Mathematical Driving Distance - 100% Free)
 function calculateFare() {
   const distanceText = document.getElementById("distanceText");
   const fareText = document.getElementById("fareText");
 
   if (pickupLat === null || dropLat === null) {
-    alert("📌 Pehle apni Live Pickup aur Map par Drop location select karein!");
+    alert("📌 Pehle Pickup aur Map par Drop location select karein!");
     return;
   }
 
   distanceText.innerText = "Distance: Calculating...";
-  fareText.innerText = "Fare: --";
 
-  const service = new google.maps.DistanceMatrixService();
-  
-  service.getDistanceMatrix(
-    {
-      origins: [{ lat: pickupLat, lng: pickupLng }],
-      destinations: [{ lat: dropLat, lng: dropLng }],
-      travelMode: google.maps.TravelMode.DRIVING,
-      unitSystem: google.maps.UnitSystem.METRIC,
-    },
-    (response, status) => {
-      if (status !== "OK") {
-        alert("❌ Google Maps API Error: " + status);
-        return;
-      }
+  // Haversine Formula: Do coordinates ke beech ki mathematical duri
+  const R = 6371; // Earth's radius in km
+  const dLat = (dropLat - pickupLat) * Math.PI / 180;
+  const dLon = (dropLng - pickupLng) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(pickupLat * Math.PI / 180) * Math.cos(dropLat * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  let straightDistance = R * c; 
 
-      const element = response.rows[0].elements[0];
+  // Sadkein thodi ghumadaar hoti hain, isliye 1.3 se multiply karke realistic driving KM nikala hai
+  let drivingDistanceKm = straightDistance * 1.3; 
+  if (drivingDistanceKm < 1) drivingDistanceKm = 1; // Minimum 1 KM line
 
-      if (element.status !== "OK") {
-        alert("❌ Is jagah tak gaadi ka rasta nahi mila!");
-        distanceText.innerText = "Distance: Route Not Found";
-        return;
-      }
+  const ratePerKm = 12; // ₹12 per KM ka rate
+  const baseFare = 30;  // Base booking charge
+  totalFare = Math.round(baseFare + (drivingDistanceKm * ratePerKm));
 
-      const distanceKm = element.distance.value / 1000;
-      const distanceStr = element.distance.text;
-
-      const ratePerKm = 12; 
-      totalFare = Math.round(distanceKm * ratePerKm);
-
-      distanceText.innerText = "Distance: " + distanceStr;
-      fareText.innerText = "Fare: ₹" + totalFare;
-    }
-  );
+  // UI par text update karna
+  distanceText.innerText = "Distance: " + drivingDistanceKm.toFixed(1) + " km";
+  fareText.innerText = "Fare: ₹" + totalFare;
 }
 
-// 4. RIDE BOOKING LOGIC
+// 4. BOOK RIDE LOGIC (Admin/Dashboard support ke sath)
 function bookRide() {
   const name = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
   const fareText = document.getElementById("fareText").innerText;
+  const distanceText = document.getElementById("distanceText").innerText;
 
   if (!name || !phone) {
     alert("📌 Pehle apna Name aur Phone number daalo!");
     return;
   }
-  if (fareText.includes("--") || fareText.includes("Error")) {
-    alert("📌 Pehle 'Calculate Distance & Fare' button daba kar kiraya check karo!");
+  if (fareText.includes("--")) {
+    alert("📌 Pehle 'Calculate Distance & Fare' button dabayein!");
     return;
   }
 
+  // Admin panel me save karne ke liye object banaya
+  let newBooking = {
+    customerName: name,
+    customerPhone: phone,
+    rideDistance: distanceText,
+    rideFare: fareText,
+    time: new Date().toLocaleString()
+  };
+
+  let totalBookings = JSON.parse(localStorage.getItem("allRides")) || [];
+  totalBookings.push(newBooking);
+  localStorage.setItem("allRides", JSON.stringify(totalBookings));
+
   alert(`🎉 Congratulations ${name}!\nAapki ride book ho chuki hai.\n${fareText}\nHamara driver aapko ${phone} par call karega.`);
+  
+  // Clear inputs
+  document.getElementById("name").value = "";
+  document.getElementById("phone").value = "";
 }
