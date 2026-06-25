@@ -3,163 +3,261 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GoBike Pro - Mobile Cloud Platform</title>
+  <title>GoBike Pro - Complete Cloud Platform</title>
+  
+  <!-- Progressive Web App Mobile App Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FFDD00">
+  
+  <!-- Tailwind CSS v4 Engine -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  
+  <!-- Leaflet Maps Free Engine (CSS & JS) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <!-- Firebase Core SDK Components -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
   <style>
-    #map { height: 250px; width: 100%; border-radius: 12px; margin-bottom: 12px; z-index: 1; }
+    /* Map layout integration */
+    #map { height: 260px; width: 100%; border-radius: 16px; margin-bottom: 16px; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
   </style>
 </head>
-<body class="bg-gray-100 font-sans text-gray-900 m-0 p-0">
+<body class="bg-gray-50 font-sans text-gray-900 m-0 p-0 no-scrollbar select-none">
 
-  <div id="roleSelection" class="flex flex-col items-center justify-center min-h-screen p-4 bg-yellow-400">
-    <h1 class="text-3xl font-bold mb-2 text-center text-black">🏍️ GoBike Core Engine</h1>
-    <p class="text-sm text-center mb-8 text-gray-800 font-medium">Mobile Cloud Production System</p>
-    <button onclick="openPortal('rider')" class="w-full max-w-xs bg-black text-white py-3 rounded-xl font-semibold mb-4 shadow-lg active:scale-95 transition">Rider (Book Bike)</button>
-    <button onclick="openPortal('driver')" class="w-full max-w-xs bg-white text-black py-3 rounded-xl font-semibold mb-4 shadow-lg active:scale-95 transition">Driver (Captain Console)</button>
-    <button onclick="openPortal('admin')" class="w-full max-w-xs bg-gray-800 text-white py-3 rounded-xl font-semibold shadow-lg active:scale-95 transition">Admin Control Panel</button>
+  <!-- ==================== 1. MAIN MENU PORTAL SCREEN ==================== -->
+  <div id="roleSelection" class="flex flex-col items-center justify-center min-h-screen p-6 bg-yellow-400">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-extrabold text-black tracking-tight mb-2">🏍️ GoBike Pro</h1>
+      <p class="text-sm font-medium text-gray-800">Production Ready Mobile Cloud Network</p>
+    </div>
+    
+    <div class="w-full max-w-xs space-y-4">
+      <button onclick="openPortal('rider')" class="w-full bg-black text-white py-3.5 rounded-2xl font-bold shadow-xl active:scale-95 transition-all text-center block">
+        Rider Portal (Book Bike)
+      </button>
+      <button onclick="openPortal('driver')" class="w-full bg-white text-black py-3.5 rounded-2xl font-bold shadow-xl active:scale-95 transition-all text-center block">
+        Driver Portal (Captain)
+      </button>
+      <button onclick="openPortal('admin')" class="w-full bg-gray-900 text-white py-3.5 rounded-2xl font-bold shadow-xl active:scale-95 transition-all text-center block">
+        Admin Control Dashboard
+      </button>
+    </div>
+    <div class="absolute bottom-4 text-xs font-semibold text-gray-700">Powered by GitHub Pages & Firebase</div>
   </div>
 
-  <div id="riderPortal" class="hidden p-4">
-    <button onclick="goBack()" class="text-sm font-bold text-gray-600 mb-4 block">← Back Menu</button>
-    <h2 class="text-2xl font-bold mb-4">📍 Book Your Ride</h2>
-    
+
+  <!-- ==================== 2. RIDER PORTAL SCREEN ==================== -->
+  <div id="riderPortal" class="hidden min-h-screen p-4 flex flex-col">
+    <header class="flex items-center mb-4">
+      <button onclick="goBack()" class="bg-white p-2 rounded-xl shadow-md text-sm font-bold text-gray-700 mr-3">← Menu</button>
+      <h2 class="text-2xl font-bold text-gray-800">📍 Ride Booking</h2>
+    </header>
+
+    <!-- Leaflet Map Container -->
     <div id="map"></div>
 
-    <div class="bg-white p-4 rounded-xl shadow-md mb-4">
-      <input type="text" id="rName" placeholder="Apna Naam" class="w-full p-3 border rounded-xl mb-3 bg-gray-50">
-      <input type="tel" id="rPhone" placeholder="Mobile Number" class="w-full p-3 border rounded-xl mb-4 bg-gray-50">
-      <p class="text-sm text-gray-500 mb-2">Estimated Fare: <span class="font-bold text-black" id="estFare">₹--</span></p>
-      <button onclick="requestRide()" class="w-full bg-yellow-500 text-black font-bold py-3 rounded-xl shadow active:scale-95 transition">⚡ Book Now</button>
+    <!-- Booking Input Details Card -->
+    <div class="bg-white p-5 rounded-2xl shadow-xl space-y-3 mb-4 border border-gray-100">
+      <div>
+        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Rider Information</label>
+        <input type="text" id="rName" placeholder="Enter Full Name" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-500 text-sm font-medium">
+      </div>
+      <div>
+        <input type="tel" id="rPhone" placeholder="Enter Mobile Number" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-500 text-sm font-medium">
+      </div>
+      
+      <div class="flex justify-between items-center py-2 px-1 border-t border-b border-gray-100 my-2">
+        <span class="text-sm font-semibold text-gray-500">Estimated Total Fare:</span>
+        <span class="text-xl font-extrabold text-green-600" id="estFare">₹0.00</span>
+      </div>
+
+      <button onclick="requestRide()" id="bookBtn" class="w-full bg-yellow-400 text-black font-extrabold py-3.5 rounded-xl shadow-md active:scale-95 transition-all text-sm uppercase tracking-wide">
+        ⚡ Request Live Booking
+      </button>
     </div>
-    <div id="riderStatusBox" class="p-3 bg-blue-50 text-blue-800 rounded-xl hidden font-medium text-center"></div>
+
+    <!-- Live Ride Realtime Processing Status Bar -->
+    <div id="riderStatusBox" class="p-4 bg-gray-900 text-white rounded-2xl hidden font-semibold text-center text-sm shadow-xl animate-pulse">
+      Searching nearby active captains...
+    </div>
   </div>
 
-  <div id="driverPortal" class="hidden p-4">
-    <button onclick="goBack()" class="text-sm font-bold text-gray-600 mb-4 block">← Back Menu</button>
-    <h2 class="text-2xl font-bold mb-2">🏍️ Captain Console</h2>
-    <p id="vStatusText" class="text-xs font-bold uppercase mb-4 text-orange-600">Status: Checking Account...</p>
 
-    <div id="kycForm" class="bg-white p-4 rounded-xl shadow-md mb-4 hidden">
-      <h3 class="font-bold mb-2 text-red-600">⚠️ Verification Mandatory</h3>
-      <input type="text" id="dName" placeholder="Full Name" class="w-full p-3 border rounded-xl mb-2 bg-gray-50">
-      <input type="text" id="dVehicle" placeholder="Bike Number (e.g. DL 3C XX 1234)" class="w-full p-3 border rounded-xl mb-2 bg-gray-50">
-      <input type="text" id="dAadhaar" placeholder="Aadhaar Card Link / Number" class="w-full p-3 border rounded-xl mb-3 bg-gray-50">
-      <button onclick="submitKyc()" class="w-full bg-black text-white font-bold py-2 rounded-xl">Upload Docs For Approval</button>
+  <!-- ==================== 3. DRIVER PORTAL & KYC SCREEN ==================== -->
+  <div id="driverPortal" class="hidden min-h-screen p-4 flex flex-col">
+    <header class="flex items-center mb-4">
+      <button onclick="goBack()" class="bg-white p-2 rounded-xl shadow-md text-sm font-bold text-gray-700 mr-3">← Menu</button>
+      <h2 class="text-2xl font-bold text-gray-800">🏍️ Captain Room</h2>
+    </header>
+
+    <div class="bg-white p-4 rounded-2xl shadow-md mb-4 border border-gray-100 flex justify-between items-center">
+      <div>
+        <p class="text-xs font-bold text-gray-400 uppercase">Verification Profile</p>
+        <h4 id="vStatusText" class="text-sm font-black uppercase text-orange-600 mt-0.5">Checking Database...</h4>
+      </div>
+      <div id="activeIndicator" class="w-3 h-3 rounded-full bg-gray-300"></div>
     </div>
 
-    <div id="driverActiveConsole" class="hidden">
-      <button onclick="toggleDuty()" id="dutyBtn" class="w-full bg-green-600 text-white font-bold py-3 rounded-xl mb-4 shadow">Go Online</button>
-      <div id="driverJobAlert" class="bg-yellow-100 border border-yellow-300 p-4 rounded-xl hidden">
-        <p class="font-bold text-yellow-800">🔥 Live Job Available!</p>
-        <p id="jobDetails" class="text-sm my-2">Rider: -- | Fare: ₹--</p>
-        <button onclick="acceptRide()" class="w-full bg-black text-white font-bold py-2 rounded-lg text-sm">Accept Job Request</button>
+    <!-- Mandatory Onboarding Registration Verification Pipeline Forms -->
+    <div id="kycForm" class="bg-white p-5 rounded-2xl shadow-xl border border-gray-100 hidden space-y-3">
+      <div class="bg-red-50 p-3 rounded-xl border border-red-100 mb-2">
+        <p class="text-xs text-red-700 font-bold leading-relaxed">⚠️ Mandatory System Verification: Documents upload authorization status pending.</p>
+      </div>
+      <input type="text" id="dName" placeholder="Full Registered Name" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium">
+      <input type="text" id="dVehicle" placeholder="Vehicle Plate Number (e.g. DL 3C XX 0000)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium">
+      <input type="text" id="dAadhaar" placeholder="Enter Identity Document Placeholder Token" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium">
+      <button onclick="submitKyc()" class="w-full bg-black text-white font-bold py-3 rounded-xl text-sm active:scale-95 transition-all">
+        Upload Registration Profile
+      </button>
+    </div>
+
+    <!-- Main Operational Captain Duty Live Control Terminal -->
+    <div id="driverActiveConsole" class="hidden flex-1 flex flex-col justify-between">
+      <button onclick="toggleDuty()" id="dutyBtn" class="w-full bg-green-600 text-white font-extrabold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-sm uppercase tracking-wider">
+        Go Online
+      </button>
+
+      <!-- Overlay Popups Broadcast Screen Layout -->
+      <div id="driverJobAlert" class="bg-yellow-400 p-5 rounded-2xl shadow-2xl border border-yellow-500 hidden transform scale-100 transition-all my-auto">
+        <div class="flex justify-between items-start mb-3">
+          <h3 class="font-black text-lg text-black">🔥 Incoming Booking Request!</h3>
+          <span class="bg-black text-white text-xs px-2 py-1 rounded-md font-bold animate-ping">NEW</span>
+        </div>
+        <p id="jobDetails" class="text-sm font-bold text-gray-900 mb-4 leading-relaxed">Rider: -- | Estimated Fare payout: ₹--</p>
+        <button onclick="acceptRide()" class="w-full bg-black text-white font-extrabold py-3 rounded-xl text-sm uppercase tracking-wide active:scale-95 transition-all">
+          Accept Job Match
+        </button>
+      </div>
+      <div class="h-10"></div>
+    </div>
+  </div>
+
+
+  <!-- ==================== 4. SYSTEM CENTRAL ADMIN DASHBOARD ==================== -->
+  <div id="adminPortal" class="hidden min-h-screen p-4 flex flex-col">
+    <header class="flex items-center mb-5">
+      <button onclick="goBack()" class="bg-white p-2 rounded-xl shadow-md text-sm font-bold text-gray-700 mr-3">← Menu</button>
+      <h2 class="text-2xl font-bold text-gray-800">📊 Admin Core Control</h2>
+    </header>
+
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="bg-white p-4 rounded-2xl shadow-md border border-gray-100">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Net Commission</p>
+        <h3 class="text-2xl font-black text-green-600 mt-1" id="admWallet">₹0.00</h3>
+      </div>
+      <div class="bg-white p-4 rounded-2xl shadow-md border border-gray-100">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Online Captains</p>
+        <h3 class="text-2xl font-black text-blue-600 mt-1" id="activeDriversCount">0</h3>
+      </div>
+    </div>
+
+    <!-- Security Document Authorization Operations Pipeline Interface -->
+    <div class="bg-white p-5 rounded-2xl shadow-xl border border-gray-100 flex-1 flex flex-col">
+      <h3 class="font-extrabold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center justify-between">
+        <span>📋 Document Verification Queue</span>
+        <span class="bg-orange-100 text-orange-700 text-xs px-2.5 py-0.5 rounded-full font-bold" id="queueBadge">0</span>
+      </h3>
+      <div id="verificationQueue" class="space-y-3 flex-1 overflow-y-auto text-sm font-medium text-gray-400 text-center pt-8">
+        No registrations matching verification state conditions.
       </div>
     </div>
   </div>
 
-  <div id="adminPortal" class="hidden p-4">
-    <button onclick="goBack()" class="text-sm font-bold text-gray-600 mb-4 block">← Back Menu</button>
-    <h2 class="text-2xl font-bold mb-4">📊 System Control Dashboard</h2>
-    
-    <div class="grid grid-cols-2 gap-3 mb-6">
-      <div class="bg-white p-4 rounded-xl shadow">
-        <p class="text-xs text-gray-500 font-medium">Admin Commission</p>
-        <h3 class="text-2xl font-bold text-green-600" id="admWallet">₹0.00</h3>
-      </div>
-      <div class="bg-white p-4 rounded-xl shadow">
-        <p class="text-xs text-gray-500 font-medium">Active Drivers</p>
-        <h3 class="text-2xl font-bold text-blue-600" id="activeDriversCount">0</h3>
-      </div>
-    </div>
 
-    <div class="bg-white p-4 rounded-xl shadow-md">
-      <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">📋 Driver Verification Queue</h3>
-      <div id="verificationQueue" class="text-sm text-gray-500">Koi pending application nahi hai.</div>
-    </div>
-  </div>
-
+  <!-- ==================== 5. CORE SYSTEM JAVASCRIPT ENGINE ==================== -->
   <script>
-    // ⚠️ CHUNAUTI: Apne pichle step wala Firebase credentials yahan copy-paste karein!
+    // ⚠️ CRITICAL CONFIGURATION: Replace with your actual Firebase Realtime Database parameters
     const firebaseConfig = {
       apiKey: "YOUR_FIREBASE_API_KEY",
       databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com"
     };
 
+    // Initialize application instance infrastructure
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    let map, driverMarker;
+    // System Central Global State Memory
+    let map = null;
+    let driverMarker = null;
     let isOnline = false;
-    let currentDriverId = "captain_01"; // Hardcoded session mobile identity ke liye
+    let currentDriverId = "captain_01"; // Hardcoded execution instance context identifier
     let currentIncomingRideId = null;
+    let systemGeneratedFare = 0;
 
-    // Initialization Helper for Leaflet Maps
+    // OpenStreetMap Leaflet Engine Routing Logic
     function initMap(lat, lng) {
       if (!map) {
-        map = L.map('map').setView([lat, lng], 14);
+        map = L.map('map', { zoomControl: false }).setView([lat, lng], 14);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: 'GoBike Maps'
+          attribution: 'GoBike Architecture'
         }).addTo(map);
-        driverMarker = L.marker([lat, lng]).addTo(map).bindPopup('Bike Captain Location').openPopup();
+        driverMarker = L.marker([lat, lng]).addTo(map).bindPopup('<b>Captain Live Tracker</b>').openPopup();
       } else {
         map.setView([lat, lng], 14);
         driverMarker.setLatLng([lat, lng]);
       }
     }
 
+    // Portal Route Controller Screen Switching Pipeline Engine
     function openPortal(portalId) {
       document.getElementById('roleSelection').classList.add('hidden');
       document.getElementById(portalId + 'Portal').classList.remove('hidden');
       
-      if(portalId === 'rider') {
-        // Mock default Delhi location for map simulation
-        initMap(28.6139, 77.2090);
-        document.getElementById('estFare').innerText = "₹" + Math.round(45 + Math.random() * 50);
+      if (portalId === 'rider') {
+        systemGeneratedFare = Math.round(35 + Math.random() * 65);
+        document.getElementById('estFare').innerText = "₹" + systemGeneratedFare + ".00";
+        initMap(28.6139, 77.2090); // Default geospatial initialization anchor context coordinates
       }
-      if(portalId === 'driver') {
-        checkDriverStatus();
+      if (portalId === 'driver') {
+        checkDriverStatusPipeline();
       }
-      if(portalId === 'admin') {
-        initAdminPanel();
+      if (portalId === 'admin') {
+        initializeAdminDashboardPipeline();
       }
     }
 
     function goBack() {
+      if (window.locationSimulationInterval) clearInterval(window.locationSimulationInterval);
       ['riderPortal', 'driverPortal', 'adminPortal'].forEach(id => document.getElementById(id).classList.add('hidden'));
       document.getElementById('roleSelection').classList.remove('hidden');
     }
 
-    // 📝 ================= DRIVER VERIFICATION PIPELINE =================
-    function checkDriverStatus() {
-      database.ref(`drivers/${currentDriverId}`).on('value', (snap) => {
-        const driver = snap.val();
+    // 📝 ================= MODULE DRIVER VERIFICATION CONTROLLER =================
+    function checkDriverStatusPipeline() {
+      database.ref(`drivers/${currentDriverId}`).on('value', (snapshot) => {
+        const driver = snapshot.val();
         const statusText = document.getElementById('vStatusText');
         const kycForm = document.getElementById('kycForm');
         const activeConsole = document.getElementById('driverActiveConsole');
+        const indicator = document.getElementById('activeIndicator');
 
         if (!driver) {
-          statusText.innerText = "Status: Not Registered";
+          statusText.innerText = "Status: Registration Pending";
           kycForm.classList.remove('hidden');
           activeConsole.classList.add('hidden');
+          indicator.className = "w-3 h-3 rounded-full bg-gray-300";
         } else {
           statusText.innerText = "Status: " + driver.verificationStatus.toUpperCase();
-          if(driver.verificationStatus === 'verified') {
-            statusText.className = "text-xs font-bold uppercase mb-4 text-green-600";
+          if (driver.verificationStatus === 'verified') {
+            statusText.className = "text-sm font-black uppercase text-green-600 mt-0.5";
             kycForm.classList.add('hidden');
             activeConsole.classList.remove('hidden');
-            listenForJobs();
-          } else if(driver.verificationStatus === 'under_review') {
-            statusText.className = "text-xs font-bold uppercase mb-4 text-blue-600";
+            indicator.className = driver.isOnline ? "w-3 h-3 rounded-full bg-green-500" : "w-3 h-3 rounded-full bg-red-500";
+            listenForIncomingSystemBroadcasts();
+          } else if (driver.verificationStatus === 'under_review') {
+            statusText.className = "text-sm font-black uppercase text-blue-600 mt-0.5";
             kycForm.classList.add('hidden');
             activeConsole.classList.add('hidden');
+            indicator.className = "w-3 h-3 rounded-full bg-blue-400 animate-pulse";
           } else {
-            statusText.className = "text-xs font-bold uppercase mb-4 text-red-600";
+            statusText.className = "text-sm font-black uppercase text-red-600 mt-0.5";
             kycForm.classList.remove('hidden');
             activeConsole.classList.add('hidden');
+            indicator.className = "w-3 h-3 rounded-full bg-red-600";
           }
         }
       });
@@ -170,56 +268,58 @@
       const vehicle = document.getElementById('dVehicle').value.trim();
       const aadhaar = document.getElementById('dAadhaar').value.trim();
 
-      if(!name || !vehicle || !aadhaar) {
-        alert("Bhai, saare documents fill karna mandatory hai!");
+      if (!name || !vehicle || !aadhaar) {
+        alert("System Processing Error: Access validation parameters empty!");
         return;
       }
 
       database.ref(`drivers/${currentDriverId}`).set({
         name: name,
         vehicle: vehicle,
-        aadhaar: aadhaar,
+        aadhaarTokenPlaceholder: "[Aadhaar Hash Redacted Verified]",
         verificationStatus: "under_review",
         isOnline: false,
         lat: 28.6139,
         lng: 77.2090
-      }).then(() => alert("✅ Documents uploaded! Admin ke approval ka wait karein."));
+      }).then(() => alert("Data Transaction Success: Registration files queued for admin authorization loops."));
     }
 
-    // 🏍️ ================= LIVE DRIVER DUTY ENGINE =================
+    // 🏍️ ================= MODULE DRIVER REALTIME ROUTING OPERATIONS =================
     function toggleDuty() {
       isOnline = !isOnline;
       const btn = document.getElementById('dutyBtn');
       database.ref(`drivers/${currentDriverId}`).update({ isOnline: isOnline });
 
-      if(isOnline) {
-        btn.innerText = "Go Offline (Online Hain)";
-        btn.className = "w-full bg-red-600 text-white font-bold py-3 rounded-xl mb-4 shadow";
+      if (isOnline) {
+        btn.innerText = "Go Offline (Active)";
+        btn.className = "w-full bg-red-600 text-white font-extrabold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-sm uppercase tracking-wider";
         
-        // 🛰️ Simulation: Live Location tracking data flow pushing every 4 seconds
-        window.locationSimulation = setInterval(() => {
-          // Mock movement vector additions to simulate moving bike
-          database.ref(`drivers/${currentDriverId}`).once('value').then(s => {
-            let nextLat = s.val().lat + (Math.random() - 0.5) * 0.002;
-            let nextLng = s.val().lng + (Math.random() - 0.5) * 0.002;
-            database.ref(`drivers/${currentDriverId}`).update({ lat: nextLat, lng: nextLng });
+        // High-velocity periodic updates tracking data loop simulation
+        window.locationSimulationInterval = setInterval(() => {
+          database.ref(`drivers/${currentDriverId}`).once('value').then(snap => {
+            let currentLat = snap.val().lat || 28.6139;
+            let currentLng = snap.val().lng || 77.2090;
+            let modifiedLat = currentLat + (Math.random() - 0.5) * 0.0015;
+            let modifiedLng = currentLng + (Math.random() - 0.5) * 0.0015;
+            database.ref(`drivers/${currentDriverId}`).update({ lat: modifiedLat, lng: modifiedLng });
           });
         }, 4000);
       } else {
         btn.innerText = "Go Online";
-        btn.className = "w-full bg-green-600 text-white font-bold py-3 rounded-xl mb-4 shadow";
-        if(window.locationSimulation) clearInterval(window.locationSimulation);
+        btn.className = "w-full bg-green-600 text-white font-extrabold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-sm uppercase tracking-wider";
+        if (window.locationSimulationInterval) clearInterval(window.locationSimulationInterval);
+        document.getElementById('driverJobAlert').classList.add('hidden');
       }
     }
 
-    function listenForJobs() {
-      database.ref('active_rides').on('value', (snap) => {
-        if(!isOnline) return;
-        const rides = snap.val();
-        for(let id in rides) {
-          if(rides[id].status === "Pending") {
+    function listenForIncomingSystemBroadcasts() {
+      database.ref('active_rides').on('value', (snapshot) => {
+        if (!isOnline) return;
+        const rides = snapshot.val();
+        for (let id in rides) {
+          if (rides[id].status === "Pending") {
             currentIncomingRideId = id;
-            document.getElementById('jobDetails').innerText = `Rider: ${rides[id].riderName} | Fare: ₹${rides[id].fare}`;
+            document.getElementById('jobDetails').innerText = `Rider: ${rides[id].riderName} | Payout: ₹${rides[id].fare}.00`;
             document.getElementById('driverJobAlert').classList.remove('hidden');
             break;
           }
@@ -228,7 +328,7 @@
     }
 
     function acceptRide() {
-      if(!currentIncomingRideId) return;
+      if (!currentIncomingRideId) return;
       database.ref(`drivers/${currentDriverId}`).once('value').then(dSnap => {
         database.ref(`active_rides/${currentIncomingRideId}`).update({
           status: "Accepted",
@@ -237,93 +337,137 @@
           driverId: currentDriverId
         }).then(() => {
           document.getElementById('driverJobAlert').classList.add('hidden');
-          alert("Trip Accepted! Live location map coordinate updates stream channel open.");
+          alert("Job Locked: Sync channels processing matching connection hooks!");
           
-          // Stream location to the rider visually via database listener link hooks
+          // Connect coordinates reference node synchronization pipeline
           database.ref(`drivers/${currentDriverId}`).on('value', (dLocSnap) => {
+            if(!currentIncomingRideId) return;
             database.ref(`active_rides/${currentIncomingRideId}/liveLocation`).set({
               lat: dLocSnap.val().lat,
               lng: dLocSnap.val().lng
             });
           });
+
+          // System automation triggers automated simulation complete validation countdown state bounds
+          setTimeout(() => {
+            if (confirm("Geofencing Notice: Arrived at destination. Process ride state compilation closure transaction?")) {
+              completeRideTransaction(currentIncomingRideId, systemGeneratedFare);
+            }
+          }, 8000);
         });
       });
     }
 
-    // 🙋‍♂️ ================= RIDER PLATFORM ENGINE =================
+    function completeRideTransaction(rideId, fare) {
+      database.ref(`active_rides/${rideId}`).update({ status: "Completed" }).then(() => {
+        database.ref(`drivers/${currentDriverId}`).off(); // Disconnect synchronization hooks
+        currentIncomingRideId = null;
+        
+        // 5% system infrastructure commission calculation
+        const adminCommissionFee = fare * 0.05;
+        database.ref('wallets/admin').once('value').then((walletSnap) => {
+          let updatedWalletBalance = (walletSnap.val() || 0) + adminCommissionFee;
+          database.ref('wallets/admin').set(updatedWalletBalance);
+        });
+        alert("System Transaction Complete: Earning parameters ledger records successfully compiled.");
+      });
+    }
+
+    // 🙋‍♂️ ================= MODULE RIDER ENGINE CONTROL INTERFACE =================
     function requestRide() {
       const name = document.getElementById('rName').value.trim();
       const phone = document.getElementById('rPhone').value.trim();
-      const fareAmt = parseInt(document.getElementById('estFare').innerText.replace('₹', ''));
+      const statusBox = document.getElementById('riderStatusBox');
+      const bookBtn = document.getElementById('bookBtn');
 
-      if(!name || !phone) {
-        alert("Details fill karein!");
+      if (!name || !phone) {
+        alert("Input Validation Fault: Credentials mapping indices null!");
         return;
       }
 
-      const newRideRef = database.ref('active_rides').push();
-      const rStatusBox = document.getElementById('riderStatusBox');
-      rStatusBox.innerText = "Searching nearby Captains...";
-      rStatusBox.classList.remove('hidden');
+      bookBtn.disabled = true;
+      bookBtn.innerText = "PROCESSING SYSTEM CHANNELS...";
+      statusBox.innerText = "Broadcasting to nearest active captains...";
+      statusBox.classList.remove('hidden');
 
-      newRideRef.set({
+      const newRideReference = database.ref('active_rides').push();
+      const rideRecordId = newRideReference.key;
+
+      newRideReference.set({
         riderName: name,
         riderPhone: phone,
-        fare: fareAmt,
+        fare: systemGeneratedFare,
         status: "Pending"
       });
 
-      // Map tracking loop attachment hooks
-      newRideRef.on('value', (snapshot) => {
+      // State tracking observer hook link loops
+      database.ref(`active_rides/${rideRecordId}`).on('value', (snapshot) => {
         const ride = snapshot.val();
-        if(!ride) return;
+        if (!ride) return;
 
-        if(ride.status === "Accepted" && ride.liveLocation) {
-          rStatusBox.innerText = `Captain ${ride.captainName} is arriving!`;
-          // Dynamically map updates moves marker in real-world sync on rider screen view
-          initMap(ride.liveLocation.lat, ride.liveLocation.lng);
+        if (ride.status === "Accepted") {
+          statusBox.innerText = `Matched: Captain ${ride.captainName} (${ride.captainVehicle}) is inbound!`;
+          statusBox.className = "p-4 bg-green-600 text-white rounded-2xl font-bold text-center text-sm shadow-xl";
+          
+          if (ride.liveLocation) {
+            initMap(ride.liveLocation.lat, ride.liveLocation.lng);
+          }
+        } else if (ride.status === "Completed") {
+          statusBox.innerText = `🏁 Ride complete! Remit ₹${ride.fare}.00 via cash/wallet channels.`;
+          statusBox.className = "p-4 bg-blue-600 text-white rounded-2xl font-bold text-center text-sm shadow-xl";
+          database.ref(`active_rides/${rideRecordId}`).off();
+          bookBtn.disabled = false;
+          bookBtn.innerText = "⚡ Request Live Booking";
         }
       });
     }
 
-    // 📊 ================= SYSTEM ADMIN DASHBOARD ENGINE =================
-    function initAdminPanel() {
-      database.ref('wallets/admin').on('value', snap => {
-        document.getElementById('admWallet').innerText = `₹${(snap.val() || 0).toFixed(2)}`;
+    // 📊 ================= MODULE CENTRAL SYSTEM ADMIN PIPELINE =================
+    function initializeAdminDashboardPipeline() {
+      database.ref('wallets/admin').on('value', snapshot => {
+        document.getElementById('admWallet').innerText = "₹" + (snapshot.val() || 0).toFixed(2);
       });
 
-      database.ref('drivers').on('value', snap => {
-        const drivers = snap.val();
-        let queueContainer = document.getElementById('verificationQueue');
-        let onlineCount = 0;
-        queueContainer.innerHTML = "";
+      database.ref('drivers').on('value', snapshot => {
+        const drivers = snapshot.val();
+        const queueLayoutContainer = document.getElementById('verificationQueue');
+        let totalOnlineCaptainsCount = 0;
+        let totalPendingReviewCount = 0;
+        
+        queueLayoutContainer.innerHTML = "";
 
-        let hasPending = false;
-        for(let id in drivers) {
-          if(drivers[id].isOnline) onlineCount++;
+        for (let id in drivers) {
+          if (drivers[id].isOnline) totalOnlineCaptainsCount++;
 
-          if(drivers[id].verificationStatus === 'under_review') {
-            hasPending = true;
-            let div = document.createElement('div');
-            div.className = "p-3 bg-gray-50 border rounded-lg mb-2 flex justify-between items-center";
-            div.innerHTML = `
+          if (drivers[id].verificationStatus === 'under_review') {
+            totalPendingReviewCount++;
+            let nodeItemDiv = document.createElement('div');
+            nodeItemDiv.className = "p-4 bg-gray-50 border border-gray-200 rounded-2xl flex justify-between items-center text-left";
+            nodeItemDiv.innerHTML = `
               <div>
-                <p class="font-bold text-black">${drivers[id].name} (${drivers[id].vehicle})</p>
-                <p class="text-xs text-gray-500">ID Link: ${drivers[id].aadhaar}</p>
+                <h5 class="font-bold text-gray-900">${drivers[id].name}</h5>
+                <p class="text-xs text-gray-500 font-semibold mt-0.5">Plate: ${drivers[id].vehicle}</p>
               </div>
-              <button onclick="approveDriver('${id}')" class="bg-green-600 text-white px-3 py-1 rounded-md text-xs font-bold">Approve</button>
+              <button onclick="executeAdminApprovalAction('${id}')" class="bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider active:scale-95 transition-all shadow-md">
+                Approve
+              </button>
             `;
-            queueContainer.appendChild(div);
+            queueLayoutContainer.appendChild(nodeItemDiv);
           }
         }
-        document.getElementById('activeDriversCount').innerText = onlineCount;
-        if(!hasPending) queueContainer.innerText = "Sabh clear hai! No applications in queue.";
+        
+        document.getElementById('activeDriversCount').innerText = totalOnlineCaptainsCount;
+        document.getElementById('queueBadge').innerText = totalPendingReviewCount;
+        
+        if (totalPendingReviewCount === 0) {
+          queueLayoutContainer.innerHTML = `<div class="pt-8 text-gray-400 font-medium text-center">No registrations matching verification state conditions.</div>`;
+        }
       });
     }
 
-    function approveDriver(id) {
-      database.ref(`drivers/${id}`).update({ verificationStatus: "verified" })
-        .then(() => alert("Driver Registration Approved Successfully!"));
+    function executeAdminApprovalAction(driverIdentityNodeKey) {
+      database.ref(`drivers/${driverIdentityNodeKey}`).update({ verificationStatus: "verified" })
+        .then(() => alert("System Action Logged: Credentials set modification compiled. Status initialized to VERIFIED."));
     }
   </script>
 </body>
