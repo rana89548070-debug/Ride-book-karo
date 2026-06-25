@@ -13,10 +13,29 @@
         button { padding: 10px 15px; margin: 5px; cursor: pointer; border-radius: 6px; font-weight: bold; }
         .btn-primary { background-color: #007bff; color: white; border: none; }
         .btn-success { background-color: #28a745; color: white; border: none; }
+        .btn-danger { background-color: #dc3545; color: white; border: none; }
         .instruction { background: #e1f5fe; padding: 8px; border-radius: 6px; margin-bottom: 10px; font-size: 0.9rem; color: #0288d1; }
+
+        /* ================= RAPIDO STYLE CAPTAIN ANIMATIONS & SMS TOAST ================= */
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #ffc107; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .sms-toast { display: none; position: fixed; top: 15px; left: 5%; width: 84%; background: #222; color: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10000; border-left: 5px solid #ffc107; font-family: sans-serif; }
+        .sms-header { font-size: 0.75rem; color: #aaa; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .sms-body { font-size: 0.95rem; font-weight: bold; }
     </style>
 </head>
 <body>
+
+    <div id="smsNotification" class="sms-toast">
+        <div class="sms-header">
+            <span>💬 MESSAGES • Just Now</span>
+            <span style="cursor:pointer;" onclick="document.getElementById('smsNotification').style.display='none'">✕</span>
+        </div>
+        <div class="sms-body" id="smsMessageContent">
+            GoBike Pro: Your OTP is 1234. Share with Captain to start ride.
+        </div>
+    </div>
 
     <div id="mainMenu" class="page-section">
         <h2>🏍️ GoBike Pro</h2>
@@ -61,7 +80,34 @@
     <div id="driverPortal" class="page-section">
         <button onclick="goBack()">← Menu</button>
         <h3>🏍️ Captain Room</h3>
-        <div id="driverStatus">STATUS: VERIFIED</div>
+        <div id="driverStatus" style="font-weight: bold; margin-bottom: 10px;">STATUS: VERIFIED</div>
+
+        <button id="dutyBtn" class="btn-danger" style="width: 95%; margin: 10px 0;" onclick="toggleDuty()">GO ONLINE</button>
+
+        <div id="driverOfflineState" style="text-align: center; color: gray; padding: 25px 10px; background: #f8f9fa; border-radius: 8px; border: 1px dashed #ccc;">
+            🔴 Aap abhi Offline hain. Rides paane ke liye Online jayein.
+        </div>
+
+        <div id="driverSearchingState" style="display: none; text-align: center; padding: 25px 10px; background: #fff; border-radius: 8px; border: 1px dashed #ccc;">
+            <div class="spinner"></div>
+            <p><strong>Rides Ki Talash Jaari Hai...</strong></p>
+            <p style="font-size: 0.8rem; color: gray; margin: 0;">Jaise hi koi customer ride book karega, instant loading band ho jayegi.</p>
+        </div>
+
+        <div id="rideRequestCard" style="display: none; background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 10px; margin-top: 15px;">
+            <h4 style="margin: 0 0 10px 0; color: #856404;">⚡ New Ride Found!</h4>
+            <p style="margin: 5px 0;"><strong>Pickup:</strong> <span id="reqPickup">--</span></p>
+            <p style="margin: 5px 0;"><strong>Drop:</strong> <span id="reqDrop">--</span></p>
+            <p style="margin: 5px 0;"><strong>Price:</strong> <span id="reqFare" style="color: green; font-weight: bold;">₹0.00</span></p>
+            <button class="btn-success" style="width:100%; margin: 10px 0 0 0;" onclick="acceptRide()">ACCEPT RIDE</button>
+        </div>
+
+        <div id="activeRideCard" style="display: none; background: #d4edda; border: 2px solid #28a745; padding: 15px; border-radius: 10px; margin-top: 15px;">
+            <h4 style="margin: 0 0 10px 0; color: #155724;">🏁 Boarding Started</h4>
+            <p style="margin: 5px 0;">Customer se pooch kar 4-Digit OTP enter karein:</p>
+            <input type="number" id="otpInput" placeholder="ENTER OTP" style="text-align: center; font-size: 1.4rem; font-weight: bold; letter-spacing: 4px; width: 90%; margin: 10px 0;">
+            <button class="btn-success" style="width:100%; margin: 5px 0 0 0;" onclick="startRide()">VERIFY & START RIDE</button>
+        </div>
     </div>
 
     <div id="adminPortal" class="page-section">
