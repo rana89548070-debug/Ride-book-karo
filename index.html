@@ -183,16 +183,43 @@
     </div>
   </div>
 
+  <script>
+    let systemGeneratedFare = 0;
+    
+    function openPortal(portalId) {
+      document.getElementById('roleSelection').classList.add('hidden');
+      document.getElementById(portalId + 'Portal').classList.remove('hidden');
+      
+      if (portalId === 'rider') {
+        systemGeneratedFare = Math.round(35 + Math.random() * 65);
+        document.getElementById('estFare').innerText = "₹" + systemGeneratedFare + ".00";
+        if (typeof initMap === 'function') {
+          initMap(28.6139, 77.2090);
+        }
+      }
+      if (portalId === 'driver') {
+        if (typeof checkDriverStatusPipeline === 'function') {
+          checkDriverStatusPipeline();
+        }
+      }
+      if (portalId === 'admin') {
+        if (typeof initializeAdminDashboardPipeline === 'function') {
+          initializeAdminDashboardPipeline();
+        }
+      }
+    }
+
+    function goBack() {
+      if (window.locationSimulationInterval) clearInterval(window.locationSimulationInterval);
+      ['riderPortal', 'driverPortal', 'adminPortal'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.classList.add('hidden');
+      });
+      document.getElementById('roleSelection').classList.remove('hidden');
+    }
+  </script>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBgmr-RNHwzrtvlELXi5OQCFco6hds6o2w",
-      databaseURL: "https://ride-book-karo-e83fd-default-rtdb.firebaseio.com"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-
     let map = null;
     let dMap = null;
     let driverMarker = null;
@@ -200,9 +227,27 @@
     let isOnline = false;
     let currentDriverId = "captain_01"; 
     let currentIncomingRideId = null;
-    let systemGeneratedFare = 0;
+    let database = null;
+
+    // Safely Initialize Firebase Network Connection
+    try {
+      const firebaseConfig = {
+        apiKey: "AIzaSyBgmr-RNHwzrtvlELXi5OQCFco6hds6o2w",
+        databaseURL: "https://ride-book-karo-e83fd-default-rtdb.firebaseio.com"
+      };
+
+      if (typeof firebase !== 'undefined') {
+        firebase.initializeApp(firebaseConfig);
+        database = firebase.database();
+      } else {
+        alert("⚠️ Firebase script blocked or failed to load. Please refresh the page.");
+      }
+    } catch (e) {
+      alert("⚠️ Firebase Network Init Error: " + e.message);
+    }
 
     function initMap(lat, lng) {
+      if (typeof L === 'undefined') return;
       if (!map) {
         map = L.map('map', { zoomControl: false }).setView([lat, lng], 14);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -216,6 +261,7 @@
     }
 
     function initDriverMap(lat, lng) {
+      if (typeof L === 'undefined') return;
       document.getElementById('driverMapContainer').classList.remove('hidden');
       if (!dMap) {
         dMap = L.map('driverMap', { zoomControl: false }).setView([lat, lng], 14);
@@ -230,33 +276,8 @@
       setTimeout(() => { if(dMap) dMap.invalidateSize(); }, 200);
     }
 
-    function openPortal(portalId) {
-      document.getElementById('roleSelection').classList.add('hidden');
-      document.getElementById(portalId + 'Portal').classList.remove('hidden');
-      
-      if (portalId === 'rider') {
-        systemGeneratedFare = Math.round(35 + Math.random() * 65);
-        document.getElementById('estFare').innerText = "₹" + systemGeneratedFare + ".00";
-        initMap(28.6139, 77.2090); 
-      }
-      if (portalId === 'driver') {
-        checkDriverStatusPipeline();
-      }
-      if (portalId === 'admin') {
-        initializeAdminDashboardPipeline();
-      }
-    }
-
-    function goBack() {
-      if (window.locationSimulationInterval) clearInterval(window.locationSimulationInterval);
-      ['riderPortal', 'driverPortal', 'adminPortal'].forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.classList.add('hidden');
-      });
-      document.getElementById('roleSelection').classList.remove('hidden');
-    }
-
     function checkDriverStatusPipeline() {
+      if (!database) return;
       database.ref(`drivers/${currentDriverId}`).on('value', (snapshot) => {
         const driver = snapshot.val();
         const statusText = document.getElementById('vStatusText');
@@ -303,6 +324,7 @@
     }
 
     function submitKyc() {
+      if (!database) return;
       const name = document.getElementById('dName').value.trim();
       const vehicle = document.getElementById('dVehicle').value.trim();
       const srcAadhaar = document.getElementById('dAadhaar').value.trim();
@@ -326,6 +348,7 @@
     }
 
     function toggleDuty() {
+      if (!database) return;
       isOnline = !isOnline;
       const btn = document.getElementById('dutyBtn');
       database.ref(`drivers/${currentDriverId}`).update({ isOnline: isOnline });
@@ -358,6 +381,7 @@
     }
 
     function listenForIncomingSystemBroadcasts() {
+      if (!database) return;
       database.ref('active_rides').on('value', (snapshot) => {
         if (!isOnline) return;
         const rides = snapshot.val();
@@ -375,7 +399,7 @@
     }
 
     function acceptRide() {
-      if (!currentIncomingRideId) return;
+      if (!database || !currentIncomingRideId) return;
       database.ref(`drivers/${currentDriverId}`).once('value').then(dSnap => {
         database.ref(`active_rides/${currentIncomingRideId}`).update({
           status: "Accepted",
@@ -396,24 +420,4 @@
 
           setTimeout(() => {
             if (confirm("Geofencing Notice: Arrived at destination. Process ride state compilation closure transaction?")) {
-              completeRideTransaction(currentIncomingRideId, systemGeneratedFare);
-            }
-          }, 8000);
-        });
-      });
-    }
-
-    function completeRideTransaction(rideId, fare) {
-      database.ref(`active_rides/${rideId}`).update({ status: "Completed" }).then(() => {
-        database.ref(`drivers/${currentDriverId}`).off(); 
-        currentIncomingRideId = null;
-        
-        const driverNetShare = fare * 0.95;
-        const adminCommissionFee = fare * 0.05;
-        
-        database.ref(`drivers/${currentDriverId}`).once('value').then((dSnap) => {
-          let oldEarnings = dSnap.val().earnings || 0;
-          let oldRidesCount = dSnap.val().ridesCompleted || 0;
-          
-          database.ref(`drivers/${currentDriverId}`).update({
-            earnings: oldEarni
+   
