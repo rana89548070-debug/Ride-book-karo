@@ -5,14 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GoBike Pro - Complete Cloud Platform</title>
   
+  <!-- Progressive Web App Mobile App Tags -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FFDD00">
   
+  <!-- Tailwind CSS v4 Engine -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   
+  <!-- Leaflet Maps Free Engine (CSS & JS) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   
+  <!-- Firebase Core SDK Components -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -25,6 +29,7 @@
 </head>
 <body class="bg-gray-50 font-sans text-gray-900 m-0 p-0 no-scrollbar select-none">
 
+  <!-- ==================== 1. MAIN MENU PORTAL SCREEN ==================== -->
   <div id="roleSelection" class="flex flex-col items-center justify-center min-h-screen p-6 bg-yellow-400">
     <div class="text-center mb-8">
       <h1 class="text-4xl font-extrabold text-black tracking-tight mb-2">🏍️ GoBike Pro</h1>
@@ -46,14 +51,17 @@
   </div>
 
 
+  <!-- ==================== 2. RIDER PORTAL SCREEN ==================== -->
   <div id="riderPortal" class="hidden min-h-screen p-4 flex flex-col">
     <header class="flex items-center mb-4">
       <button onclick="goBack()" class="bg-white p-2 rounded-xl shadow-md text-sm font-bold text-gray-700 mr-3">← Menu</button>
       <h2 class="text-2xl font-bold text-gray-800">📍 Ride Booking</h2>
     </header>
 
+    <!-- Leaflet Map Container -->
     <div id="map"></div>
 
+    <!-- Booking Input Details Card -->
     <div class="bg-white p-5 rounded-2xl shadow-xl space-y-3 mb-4 border border-gray-100">
       <div>
         <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Rider Information</label>
@@ -73,12 +81,14 @@
       </button>
     </div>
 
+    <!-- Live Ride Realtime Processing Status Bar -->
     <div id="riderStatusBox" class="p-4 bg-gray-900 text-white rounded-2xl hidden font-semibold text-center text-sm shadow-xl animate-pulse">
       Searching nearby active captains...
     </div>
   </div>
 
 
+  <!-- ==================== 3. DRIVER PORTAL & KYC SCREEN ==================== -->
   <div id="driverPortal" class="hidden min-h-screen p-4 flex flex-col">
     <header class="flex items-center mb-4">
       <button onclick="goBack()" class="bg-white p-2 rounded-xl shadow-md text-sm font-bold text-gray-700 mr-3">← Menu</button>
@@ -93,6 +103,7 @@
       <div id="activeIndicator" class="w-3 h-3 rounded-full bg-gray-300"></div>
     </div>
 
+    <!-- Mandatory Onboarding Registration Verification Pipeline Forms -->
     <div id="kycForm" class="bg-white p-5 rounded-2xl shadow-xl border border-gray-100 hidden space-y-3">
       <div class="bg-red-50 p-3 rounded-xl border border-red-100 mb-2">
         <p class="text-xs text-red-700 font-bold leading-relaxed">⚠️ Mandatory System Verification: Documents upload authorization status pending.</p>
@@ -105,8 +116,10 @@
       </button>
     </div>
 
+    <!-- UPGRADED PREMIUM DRIVER REAL-TIME LIVE DASHBOARD -->
     <div id="driverActiveConsole" class="hidden flex-1 flex flex-col space-y-4">
       
+      <!-- 💰 Rapido Style Live Earnings Display Layout -->
       <div class="grid grid-cols-3 gap-2 bg-gradient-to-br from-gray-900 to-black p-4 rounded-2xl text-white shadow-xl border border-gray-800">
         <div class="text-center border-r border-gray-800">
           <p class="text-[10px] font-bold text-gray-400 uppercase">Net Earnings</p>
@@ -122,6 +135,7 @@
         </div>
       </div>
 
+      <!-- ⚡ Radar Switch Operations & Telemetry Control Bar -->
       <div class="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-gray-100">
         <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Radar Duty Mode</span>
         <button onclick="toggleDuty()" id="dutyBtn" class="bg-green-600 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider active:scale-95 transition-all shadow-md">
@@ -129,10 +143,12 @@
         </button>
       </div>
 
+      <!-- 🗺️ Captain Dedicated Live Navigation Tracking Map Grid -->
       <div id="driverMapContainer" class="hidden">
         <div id="driverMap"></div>
       </div>
 
+      <!-- 📳 Incoming Order Broadcast Layer (Floating Card Popup Layout) -->
       <div id="driverJobAlert" class="bg-yellow-400 p-5 rounded-2xl shadow-2xl border-2 border-black hidden transform scale-100 transition-all my-auto">
         <div class="flex justify-between items-center mb-3">
           <h4 class="font-black text-base text-black uppercase tracking-tight">⚡ Flash Booking Request</h4>
@@ -150,6 +166,7 @@
   </div>
 
 
+  <!-- ==================== 4. SYSTEM CENTRAL ADMIN DASHBOARD ==================== -->
   <div id="adminPortal" class="hidden min-h-screen p-4 flex flex-col">
     <header class="flex items-center mb-5">
       <button onclick="goBack()" class="bg-white p-2 rounded-xl shadow-md text-sm font-bold text-gray-700 mr-3">← Menu</button>
@@ -167,6 +184,7 @@
       </div>
     </div>
 
+    <!-- Security Document Authorization Operations Pipeline Interface -->
     <div class="bg-white p-5 rounded-2xl shadow-xl border border-gray-100 flex-1 flex flex-col">
       <h3 class="font-extrabold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center justify-between">
         <span>📋 Document Verification Queue</span>
@@ -179,8 +197,212 @@
   </div>
 
 
+  <!-- ==================== 5. CORE SYSTEM JAVASCRIPT ENGINE ==================== -->
   <script>
     const firebaseConfig = {
+      apiKey: "AIzaSyBgmr-RNHwzrtvlELXi5OQCFco6hds6o2w",
+      databaseURL: "https://ride-book-karo-e83fd-default-rtdb.firebaseio.com"
+    };
+
+    // Initialize application instance infrastructure
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // System Central Global State Memory
+    let map = null;
+    let dMap = null;
+    let driverMarker = null;
+    let dMapMarker = null;
+    let isOnline = false;
+    let currentDriverId = "captain_01"; 
+    let currentIncomingRideId = null;
+    let systemGeneratedFare = 0;
+
+    // OpenStreetMap Leaflet Engine Routing Logic
+    function initMap(lat, lng) {
+      if (!map) {
+        map = L.map('map', { zoomControl: false }).setView([lat, lng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: 'GoBike Architecture'
+        }).addTo(map);
+        driverMarker = L.marker([lat, lng]).addTo(map).bindPopup('<b>Captain Live Tracker</b>').openPopup();
+      } else {
+        map.setView([lat, lng], 14);
+        driverMarker.setLatLng([lat, lng]);
+      }
+    }
+
+    // Captain Dedicated Live Map Panel Engine
+    function initDriverMap(lat, lng) {
+      document.getElementById('driverMapContainer').classList.remove('hidden');
+      if (!dMap) {
+        dMap = L.map('driverMap', { zoomControl: false }).setView([lat, lng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: 'GoBike Architecture'
+        }).addTo(dMap);
+        dMapMarker = L.marker([lat, lng]).addTo(dMap).bindPopup('<b>Your Live Position</b>').openPopup();
+      } else {
+        dMap.setView([lat, lng], 14);
+        dMapMarker.setLatLng([lat, lng]);
+      }
+      setTimeout(() => { dMap.invalidateSize(); }, 200);
+    }
+
+    // Portal Route Controller Screen Switching Pipeline Engine
+    function openPortal(portalId) {
+      document.getElementById('roleSelection').classList.add('hidden');
+      document.getElementById(portalId + 'Portal').classList.remove('hidden');
+      
+      if (portalId === 'rider') {
+        systemGeneratedFare = Math.round(35 + Math.random() * 65);
+        document.getElementById('estFare').innerText = "₹" + systemGeneratedFare + ".00";
+        initMap(28.6139, 77.2090); 
+      }
+      if (portalId === 'driver') {
+        checkDriverStatusPipeline();
+      }
+      if (portalId === 'admin') {
+        initializeAdminDashboardPipeline();
+      }
+    }
+
+    function goBack() {
+      if (window.locationSimulationInterval) clearInterval(window.locationSimulationInterval);
+      ['riderPortal', 'driverPortal', 'adminPortal'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      document.getElementById('roleSelection').classList.remove('hidden');
+    }
+
+    // 📝 ================= MODULE DRIVER VERIFICATION CONTROLLER =================
+    function checkDriverStatusPipeline() {
+      database.ref(`drivers/${currentDriverId}`).on('value', (snapshot) => {
+        const driver = snapshot.val();
+        const statusText = document.getElementById('vStatusText');
+        const kycForm = document.getElementById('kycForm');
+        const activeConsole = document.getElementById('driverActiveConsole');
+        const indicator = document.getElementById('activeIndicator');
+
+        if (!driver) {
+          statusText.innerText = "Status: Registration Pending";
+          kycForm.classList.remove('hidden');
+          activeConsole.classList.add('hidden');
+          indicator.className = "w-3 h-3 rounded-full bg-gray-300";
+        } else {
+          statusText.innerText = "Status: " + driver.verificationStatus.toUpperCase();
+          
+          if (driver.earnings) {
+            document.getElementById('capTodayEarning').innerText = "₹" + parseFloat(driver.earnings).toFixed(2);
+          }
+          if (driver.ridesCompleted) {
+            document.getElementById('capTotalRides').innerText = driver.ridesCompleted;
+          }
+
+          if (driver.verificationStatus === 'verified') {
+            statusText.className = "text-sm font-black uppercase text-green-600 mt-0.5";
+            kycForm.classList.add('hidden');
+            activeConsole.classList.remove('hidden');
+            indicator.className = driver.isOnline ? "w-3 h-3 rounded-full bg-green-500" : "w-3 h-3 rounded-full bg-red-500";
+            
+            initDriverMap(driver.lat || 28.6139, driver.lng || 77.2090);
+            listenForIncomingSystemBroadcasts();
+          } else if (driver.verificationStatus === 'under_review') {
+            statusText.className = "text-sm font-black uppercase text-blue-600 mt-0.5";
+            kycForm.classList.add('hidden');
+            activeConsole.classList.add('hidden');
+            indicator.className = "w-3 h-3 rounded-full bg-blue-400 animate-pulse";
+          } else {
+            statusText.className = "text-sm font-black uppercase text-red-600 mt-0.5";
+            kycForm.classList.remove('hidden');
+            activeConsole.classList.add('hidden');
+            indicator.className = "w-3 h-3 rounded-full bg-red-600";
+          }
+        }
+      });
+    }
+
+    function submitKyc() {
+      const name = document.getElementById('dName').value.trim();
+      const vehicle = document.getElementById('dVehicle').value.trim();
+      const srcAadhaar = document.getElementById('dAadhaar').value.trim();
+
+      if (!name || !vehicle || !srcAadhaar) {
+        alert("System Processing Error: Access validation parameters empty!");
+        return;
+      }
+
+      database.ref(`drivers/${currentDriverId}`).set({
+        name: name,
+        vehicle: vehicle,
+        aadhaarTokenPlaceholder: "[Aadhaar Hash Redacted Verified]",
+        verificationStatus: "under_review",
+        isOnline: false,
+        earnings: 0,
+        ridesCompleted: 0,
+        lat: 28.6139,
+        lng: 77.2090
+      }).then(() => alert("Data Transaction Success: Registration files queued for admin authorization loops."));
+    }
+
+    // 🏍️ ================= MODULE DRIVER REALTIME ROUTING OPERATIONS =================
+    function toggleDuty() {
+      isOnline = !isOnline;
+      const btn = document.getElementById('dutyBtn');
+      database.ref(`drivers/${currentDriverId}`).update({ isOnline: isOnline });
+
+      if (isOnline) {
+        btn.innerText = "Go Offline";
+        btn.className = "bg-red-600 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider active:scale-95 transition-all shadow-md";
+        
+        window.locationSimulationInterval = setInterval(() => {
+          database.ref(`drivers/${currentDriverId}`).once('value').then(snap => {
+            let currentLat = snap.val().lat || 28.6139;
+            let currentLng = snap.val().lng || 77.2090;
+            let modifiedLat = currentLat + (Math.random() - 0.5) * 0.0015;
+            let modifiedLng = currentLng + (Math.random() - 0.5) * 0.0015;
+            
+            database.ref(`drivers/${currentDriverId}`).update({ lat: modifiedLat, lng: modifiedLng });
+            if (dMapMarker) {
+              dMapMarker.setLatLng([modifiedLat, modifiedLng]);
+              dMap.setView([modifiedLat, modifiedLng]);
+            }
+          });
+        }, 4000);
+      } else {
+        btn.innerText = "Go Online";
+        btn.className = "bg-green-600 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider active:scale-95 transition-all shadow-md";
+        if (window.locationSimulationInterval) clearInterval(window.locationSimulationInterval);
+        document.getElementById('driverJobAlert').classList.add('hidden');
+      }
+    }
+
+    function listenForIncomingSystemBroadcasts() {
+      database.ref('active_rides').on('value', (snapshot) => {
+        if (!isOnline) return;
+        const rides = snapshot.val();
+        for (let id in rides) {
+          if (rides[id].status === "Pending") {
+            currentIncomingRideId = id;
+            systemGeneratedFare = rides[id].fare; 
+            document.getElementById('jobDetails').innerText = `Client: ${rides[id].riderName} | Est Payout: ₹${rides[id].fare}.00`;
+            document.getElementById('driverJobAlert').classList.remove('hidden');
+            break;
+          }
+        }
+      });
+    }
+
+    function acceptRide() {
+      if (!currentIncomingRideId) return;
+      database.ref(`drivers/${currentDriverId}`).once('value').then(dSnap => {
+        database.ref(`active_rides/${currentIncomingRideId}`).update({
+          status: "Accepted",
+          captainName: dSnap.val().name,
+          captainVehicle: dSnap.val().vehicle,
+          driverId: currentDriverId
+        }).then(() => {
+          document.getElementById('driverJobAlert').classList.add('hidden');
+          alert("Job Locked: Sync channels processing matching connection hooks!");
+          
+         nfig = {
       apiKey: "AIzaSyBgmr-RNHwzrtvlELXi5OQCFco6hds6o2w",
       databaseURL: "https://ride-book-karo-e83fd-default-rtdb.firebaseio.com"
     };
