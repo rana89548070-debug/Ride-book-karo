@@ -8,7 +8,8 @@
     <style>
         .page-section { display: none; }
         #mainMenu { display: block; }
-        #map { height: 300px; width: 100%; border-radius: 12px; margin-bottom: 15px; border: 2px solid #ccc; }
+        #map, #driverMap { height: 300px; width: 100%; border-radius: 12px; margin-bottom: 15px; border: 2px solid #ccc; }
+        #driverMap { border-color: #ffc107; display: none; } /* Captain Map highlighted with Yellow/Amber border */
         input { display: block; margin: 10px 0; padding: 8px; width: 90%; border-radius: 6px; border: 1px solid #aaa; }
         button { padding: 10px 15px; margin: 5px; cursor: pointer; border-radius: 6px; font-weight: bold; }
         .btn-primary { background-color: #007bff; color: white; border: none; }
@@ -53,7 +54,7 @@
         <div id="mapInstruction" class="instruction">Map par click karke <b>Pickup Location</b> select karein.</div>
         
         <div id="map"></div>
-        <button onclick="resetLocations()" style="background:#dc3545; color:white; border:none; padding: 5px 10px; font-size:0.8rem;">Reset Map Locations</button>
+        <button onclick="resetLocations()" style="background:#dc3545; color:white; border:none; padding: 5px 10px; font-size:0.8rem; margin-bottom: 10px;">Reset Map Locations</button>
 
         <div class="location-inputs">
             <label>Pickup Address:</label>
@@ -74,7 +75,7 @@
             <div style="margin-top: 5px;">Estimated Fare: <strong id="totalFareDisplay" style="color: green; font-size: 1.5rem;">₹0.00</strong></div>
         </div>
 
-        <button id="requestBookingBtn" class="btn-success" onclick="requestLiveBooking()">REQUEST LIVE BOOKING</button>
+        <button id="requestBookingBtn" class="btn-success" style="width: 95%;" onclick="requestLiveBooking()">REQUEST LIVE BOOKING</button>
     </div>
 
     <div id="driverPortal" class="page-section">
@@ -83,6 +84,8 @@
         <div id="driverStatus" style="font-weight: bold; margin-bottom: 10px;">STATUS: VERIFIED</div>
 
         <button id="dutyBtn" class="btn-danger" style="width: 95%; margin: 10px 0;" onclick="toggleDuty()">GO ONLINE</button>
+
+        <div id="driverMap"></div>
 
         <div id="driverOfflineState" style="text-align: center; color: gray; padding: 25px 10px; background: #f8f9fa; border-radius: 8px; border: 1px dashed #ccc;">
             🔴 Aap abhi Offline hain. Rides paane ke liye Online jayein.
@@ -108,12 +111,45 @@
             <input type="number" id="otpInput" placeholder="ENTER OTP" style="text-align: center; font-size: 1.4rem; font-weight: bold; letter-spacing: 4px; width: 90%; margin: 10px 0;">
             <button class="btn-success" style="width:100%; margin: 5px 0 0 0;" onclick="startRide()">VERIFY & START RIDE</button>
         </div>
+
+        <div id="ongoingRideCard" style="display: none; background: #e2f0d9; border: 2px solid #385723; padding: 15px; border-radius: 10px; margin-top: 15px;">
+            <h4 style="margin: 0 0 10px 0; color: #385723;">🏁 Ride In Progress...</h4>
+            <p style="margin: 5px 0; font-size: 0.9rem; color: #555;">Rider ko drop location par safe drop karne ke baad neeche click karein.</p>
+            <button class="btn-danger" style="width:100%; margin-top: 10px;" onclick="endTripAndGenerateInvoice()">COMPLETE & END TRIP</button>
+        </div>
+
+        <div id="billSummaryCard" style="display: none; background: #ffffff; border: 2px solid #6c757d; padding: 15px; border-radius: 10px; margin-top: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+            <h4 style="margin: 0 0 15px 0; color: #222; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 5px;">🧾 Trip Bill Summary</h4>
+            <p style="margin: 6px 0;"><strong>Total Ride Distance:</strong> <span id="billDistance" style="float: right;">0.0 km</span></p>
+            <p style="margin: 6px 0;"><strong>Gross Fare Collected:</strong> <span id="billFare" style="float: right; font-weight: bold;">₹0.00</span></p>
+            <p style="margin: 6px 0; color: #dc3545;"><strong>Platform Commission Deducted (20%):</strong> <span id="billCommission" style="float: right;">-₹0.00</span></p>
+            <hr style="border: 0; border-top: 1px dashed #aaa; margin: 10px 0;">
+            <p style="margin: 10px 0; font-size: 1.2rem; color: #28a745;"><strong>Captain Net Cash Earnings:</strong> <span id="billEarnings" style="float: right; font-weight: bold;">₹0.00</span></p>
+            
+            <h5 style="margin: 20px 0 8px 0; color: #444;">💰 Select Payment Mode:</h5>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button id="cashPayBtn" style="flex: 1; background-color: #6c757d; color: white;" onclick="selectPaymentMode('cash')">CASH PAY</button>
+                <button id="qrPayBtn" style="flex: 1; background-color: #6c757d; color: white;" onclick="selectPaymentMode('qr')">ONLINE QR</button>
+            </div>
+
+            <div id="qrSection" style="display: none; text-align: center; margin-bottom: 15px; padding: 12px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px;">
+                <p style="margin: 0 0 8px 0; font-size: 0.85rem; color: #666; font-weight: bold;">Scan this QR to pay instantly via UPI</p>
+                <div style="width: 130px; height: 130px; background: #222; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: #ffc107; font-size: 0.8rem; font-weight: bold; border-radius: 6px; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                    [ DYNAMIC QR ]
+                </div>
+            </div>
+
+            <button class="btn-success" style="width: 100%; font-size: 1.1rem; padding: 12px;" onclick="collectPaymentAndReset()">COLLECT PAYMENT & SETTLE</button>
+        </div>
     </div>
 
     <div id="adminPortal" class="page-section">
         <button onclick="goBack()">← Menu</button>
         <h3>📊 Admin Core Control</h3>
-        <p>Net Commission: ₹0.00</p>
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #ddd;">
+            <p style="font-size: 1.1rem; margin: 0;">Net Platform Commission Earned (Global Ledger):</p>
+            <h2 id="adminNetCommission" style="color: #007bff; margin: 10px 0 0 0;">₹0.00</h2>
+        </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
