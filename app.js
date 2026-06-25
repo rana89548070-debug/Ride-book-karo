@@ -17,7 +17,8 @@ let dRoutingLine = null;
 // Real-time Cloud Simulation State Engines
 let isDriverOnline = false; 
 let currentLiveBooking = null; 
-let netAdminCommission = 0; // Global Ledger Balance
+let netAdminCommission = 0; // Global Ledger Balance Admin Ka
+let driverWalletBalance = 0; // Driver Ka Personal Wallet Balance (Rapido Style)
 let selectedPaymentMode = 'cash'; // Default Payment Method
 
 // Cached Variables for Billing Calculations
@@ -35,7 +36,9 @@ function handleRouting() {
         section.style.display = 'none';
     });
 
-    // Active hash configurations switch routing engine
+    // Sync current Driver Wallet Balance UI instantly
+    document.getElementById('driverWalletDisplay').innerText = `₹${driverWalletBalance}.00`;
+
     if (hash === '#rider') {
         document.getElementById('riderPortal').style.display = 'block';
         initializeMap(); 
@@ -44,7 +47,6 @@ function handleRouting() {
         updateDriverUI(); 
     } else if (hash === '#admin') {
         document.getElementById('adminPortal').style.display = 'block';
-        // Admin workspace core live tracking screen update
         document.getElementById('adminNetCommission').innerText = `₹${netAdminCommission}.00`;
     } else {
         document.getElementById('mainMenu').style.display = 'block';
@@ -59,7 +61,6 @@ function goBack() {
     window.location.hash = ''; 
 }
 
-// Global Core System Event Initialization Listeners
 window.addEventListener('hashchange', handleRouting);
 window.addEventListener('load', handleRouting);
 
@@ -68,7 +69,6 @@ window.addEventListener('load', handleRouting);
 // =========================================================================
 function initializeMap() {
     if (!map) {
-        // Default View Context Layout: Rudrapur Area [28.98, 79.40]
         map = L.map('map').setView([28.98, 79.40], 13);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -78,7 +78,6 @@ function initializeMap() {
         map.on('click', handleMapClick);
     }
     
-    // Auto correction layout layer execution timing delay loop
     setTimeout(() => {
         map.invalidateSize();
     }, 300);
@@ -131,7 +130,6 @@ function resetLocations() {
     pickupMarker = null;
     dropMarker = null;
     routingLine = null;
-    
     cachedDistance = 0;
     cachedFare = 0;
     
@@ -157,10 +155,8 @@ async function calculateRealRouteAndFare() {
         if (data.code === "Ok" && data.routes.length > 0) {
             const route = data.routes[0];
             cachedDistance = (route.distance / 1000).toFixed(1); 
-            
             document.getElementById('distanceDisplay').innerText = `${cachedDistance} km`;
 
-            // Standard Rate Card Calculation Structure: Base ₹30 + ₹12/KM
             const baseFare = 30;
             const perKmRate = 12;
             let finalFare = baseFare + (cachedDistance * perKmRate);
@@ -176,10 +172,10 @@ async function calculateRealRouteAndFare() {
             const group = new L.featureGroup([pickupMarker, dropMarker]);
             map.fitBounds(group.getBounds().pad(0.2));
         } else {
-            alert("Road route network clear nahi hai. Kripya doosri location chunein.");
+            alert("Road route network clear nahi hai.");
         }
     } catch (error) {
-        console.error("OSRM Route Index processing exception error:", error);
+        console.error("OSRM Route Error:", error);
     }
 }
 
@@ -215,11 +211,9 @@ function initializeDriverNavigationMap(pCoords, dCoords) {
                 driverMap.fitBounds(group.getBounds().pad(0.2));
             }
         })
-        .catch(err => console.error("Driver map calculation logic issue:", err));
+        .catch(err => console.error("Driver map error:", err));
 
-    setTimeout(() => {
-        driverMap.invalidateSize();
-    }, 300);
+    setTimeout(() => { driverMap.invalidateSize(); }, 300);
 }
 
 // =========================================================================
@@ -239,7 +233,8 @@ function updateDriverUI() {
     const ongoingCard = document.getElementById('ongoingRideCard');
     const billCard = document.getElementById('billSummaryCard');
 
-    // Default configuration visibility flush structure
+    document.getElementById('driverWalletDisplay').innerText = `₹${driverWalletBalance}.00`;
+
     offlineState.style.display = "none";
     searchingState.style.display = "none";
     reqCard.style.display = "none";
@@ -300,7 +295,6 @@ function requestLiveBooking() {
 
     const generatedOTP = Math.floor(1000 + Math.random() * 9000);
 
-    // Save tracking metadata into secure current object cache context
     currentLiveBooking = {
         name: name,
         phone: phone,
@@ -315,14 +309,12 @@ function requestLiveBooking() {
         dropCoords: dropLatLng
     };
 
-    // Simulated Real-Time Network Toast SMS Alerts
     const smsBox = document.getElementById('smsNotification');
     document.getElementById('smsMessageContent').innerText = `📬 GoBike Pro: Hi ${name}, your booking OTP is [ ${generatedOTP} ]. Share this with Captain only after sitting on bike.`;
     smsBox.style.display = "block";
     
     setTimeout(() => { smsBox.style.display = "none"; }, 8000);
-
-    alert("🎉 Ride Request Sent! Screen par system notification validation OTP check karein.");
+    alert("🎉 Ride Request Sent! Screen par notification check karein.");
     
     resetLocations(); 
     goBack(); 
@@ -330,17 +322,13 @@ function requestLiveBooking() {
 
 function acceptRide() {
     if (!currentLiveBooking) return;
-    
     currentLiveBooking.status = "accepted";
     updateDriverUI();
-    
-    // Auto initialization layout structure map mapping engine for driver routing
     initializeDriverNavigationMap(currentLiveBooking.pickupCoords, currentLiveBooking.dropCoords);
 }
 
 function startRide() {
     const enteredOTP = document.getElementById('otpInput').value.trim();
-
     if (!currentLiveBooking) return;
 
     if (enteredOTP == currentLiveBooking.otp) {
@@ -354,30 +342,29 @@ function startRide() {
 }
 
 // =========================================================================
-// 7. RAPIDO TRIP END METRICS (BILLING + PAYMENT SPLIT + ADMINISTRATIVE)
+// 7. RAPIDO TRIP END METRICS (BILLING + AUTOMATIC QR + WALLET SPLIT)
 // =========================================================================
 function endTripAndGenerateInvoice() {
     if (!currentLiveBooking) return;
 
     currentLiveBooking.status = "completed";
 
-    // Standard platform matrix calculations engine
     const totalFare = currentLiveBooking.fareRaw;
-    const commissionSplit = Math.round(totalFare * 0.20); // 20% Platform Fee Split Structure
-    const captainEarnings = totalFare - commissionSplit;
+    const commissionSplit = Math.round(totalFare * 0.20); // 20% Admin Fee
+    const captainEarnings = totalFare - commissionSplit; // 80% Driver Wallet Earning
 
-    // Mapping dynamic invoice targets to view component containers
     document.getElementById('billDistance').innerText = `${currentLiveBooking.distance} km`;
     document.getElementById('billFare').innerText = `₹${totalFare}.00`;
     document.getElementById('billCommission').innerText = `-₹${commissionSplit}.00`;
     document.getElementById('billEarnings').innerText = `₹${captainEarnings}.00`;
 
-    // Cache billing calculations into runtime variables for processing validation routines
     currentLiveBooking.calculatedCommission = commissionSplit;
+    currentLiveBooking.calculatedCaptainShare = captainEarnings;
 
     updateDriverUI();
 }
 
+// AUTOMATIC QR GENERATION ENGINE ON CLICK
 function selectPaymentMode(mode) {
     selectedPaymentMode = mode;
     const cashBtn = document.getElementById('cashPayBtn');
@@ -387,30 +374,46 @@ function selectPaymentMode(mode) {
     if (mode === 'qr') {
         qrBtn.style.backgroundColor = "#28a745";
         cashBtn.style.backgroundColor = "#6c757d";
+        
+        // Dynamic UPI Generation according to actual Gross Fare
+        const amountToPay = currentLiveBooking.fareRaw;
+        // Standard UPI String Layout (Simulating Captain Account)
+        const upiString = `upi://pay?pa=gobikepro.captain@paytm&pn=GoBikeCaptain&am=${amountToPay}&cu=INR&tn=GoBikeRidePayment`;
+        
+        // Calling External QR Generation Network Server
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(upiString)}`;
+        
+        // Mapping elements directly to interface display
+        document.getElementById('dynamicQrCode').src = qrApiUrl;
+        document.getElementById('qrFareText').innerText = `Scan to Pay: ₹${amountToPay}.00`;
+        
         qrBox.style.display = "block";
     } else {
         cashBtn.style.backgroundColor = "#28a745";
         qrBtn.style.backgroundColor = "#6c757d";
         qrBox.style.display = "none";
-    }ws
+    }
 }
 
+// COLLECT PAYMENT AND SPLIT MONEY INTO DRIVER WALLET
 function collectPaymentAndReset() {
     if (!currentLiveBooking) return;
 
-    // Central Administrative Accounting Module Synchronization Routine
+    // 1. Admin Platform Share goes to Admin Account Ledger
     netAdminCommission += currentLiveBooking.calculatedCommission;
 
-    alert(`✅ Payment Settle Ho Gaya! Mode: ${selectedPaymentMode.toUpperCase()}. Platform commission successfully updated.`);
+    // 2. Driver Net Share directly added into Driver's Wallet Account (Like Rapido)
+    driverWalletBalance += currentLiveBooking.calculatedCaptainShare;
 
-    // Resetting systemic state flags back into default mode variables
+    alert(`✅ Payment Settle Ho Gaya!\n\nMode: ${selectedPaymentMode.toUpperCase()}\nPlatform Fee: ₹${currentLiveBooking.calculatedCommission} sent to Admin.\nNet Profit: ₹${currentLiveBooking.calculatedCaptainShare} credited to Captain Wallet.`);
+
+    // Resetting System variables
     currentLiveBooking = null;
     selectedPaymentMode = 'cash';
     
-    // UI button state cleanup procedures
     document.getElementById('cashPayBtn').style.backgroundColor = "#6c757d";
     document.getElementById('qrPayBtn').style.backgroundColor = "#6c757d";
     document.getElementById('qrSection').style.display = "none";
 
     updateDriverUI();
-            }
+                }
