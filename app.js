@@ -21,7 +21,6 @@ let selectedPaymentMode = 'cash';
 let cachedDistance = 0;
 let cachedFare = 0;
 
-// New State Variables for Timer & Swipe
 let offerTimer = null;
 let timeLeft = 10;
 
@@ -30,39 +29,62 @@ let timeLeft = 10;
 // =========================================================================
 function handleRouting() {
     const hash = window.location.hash;
+    
+    // Safely hide sections
     document.querySelectorAll('.page-section').forEach(section => { section.style.display = 'none'; });
-    document.getElementById('driverWalletDisplay').innerText = `₹${driverWalletBalance}.00`;
+
+    // Defensive check: Check if element exists before setting innerText
+    const walletEl = document.getElementById('driverWalletDisplay');
+    if(walletEl) {
+        walletEl.innerText = `₹${driverWalletBalance}.00`;
+    }
 
     if (hash === '#rider') {
-        document.getElementById('riderPortal').style.display = 'block';
-        initializeMap(); 
+        const portal = document.getElementById('riderPortal');
+        if(portal) {
+            portal.style.display = 'block';
+            initializeMap(); 
+        }
     } else if (hash === '#driver') {
-        document.getElementById('driverPortal').style.display = 'block';
-        updateDriverUI(); 
+        const portal = document.getElementById('driverPortal');
+        if(portal) {
+            portal.style.display = 'block';
+            updateDriverUI(); 
+        }
     } else if (hash === '#admin') {
-        document.getElementById('adminPortal').style.display = 'block';
-        document.getElementById('adminNetCommission').innerText = `₹${netAdminCommission}.00`;
+        const portal = document.getElementById('adminPortal');
+        const adminEl = document.getElementById('adminNetCommission');
+        if(portal) {
+            portal.style.display = 'block';
+            if(adminEl) adminEl.innerText = `₹${netAdminCommission}.00`;
+        }
     } else {
-        document.getElementById('mainMenu').style.display = 'block';
+        const menu = document.getElementById('mainMenu');
+        if(menu) menu.style.display = 'block';
     }
 }
 
 function openPortal(portalName) { window.location.hash = portalName; }
 function goBack() { window.location.hash = ''; }
 
+// DOM Load hone ka intezar karein
+window.addEventListener('DOMContentLoaded', () => {
+    handleRouting();
+});
+
 window.addEventListener('hashchange', handleRouting);
-window.addEventListener('load', handleRouting);
 
 // =========================================================================
-// 2. LEAFLET MAP & OSRM LOGIC (Same as before)
+// 2. LEAFLET MAP & OSRM LOGIC
 // =========================================================================
 function initializeMap() {
-    if (!map) {
+    const mapEl = document.getElementById('map');
+    if (!map && mapEl) {
         map = L.map('map').setView([28.98, 79.40], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
         map.on('click', handleMapClick);
     }
-    setTimeout(() => { map.invalidateSize(); }, 300);
+    if(map) setTimeout(() => { map.invalidateSize(); }, 300);
 }
 
 async function handleMapClick(e) {
@@ -71,11 +93,13 @@ async function handleMapClick(e) {
     if (!pickupLatLng) {
         pickupLatLng = e.latlng;
         pickupMarker = L.marker([lat, lng]).addTo(map).bindPopup("<b>Pickup</b>").openPopup();
-        document.getElementById('pickupLocation').value = "Pickup set";
+        const pInput = document.getElementById('pickupLocation');
+        if(pInput) pInput.value = "Pickup set";
     } else if (!dropLatLng) {
         dropLatLng = e.latlng;
         dropMarker = L.marker([lat, lng]).addTo(map).bindPopup("<b>Drop</b>").openPopup();
-        document.getElementById('dropLocation').value = "Drop set";
+        const dInput = document.getElementById('dropLocation');
+        if(dInput) dInput.value = "Drop set";
         calculateRealRouteAndFare();
     }
 }
@@ -90,42 +114,45 @@ async function calculateRealRouteAndFare() {
             const route = data.routes[0];
             cachedDistance = (route.distance / 1000).toFixed(1);
             cachedFare = Math.round(30 + (cachedDistance * 12));
-            document.getElementById('distanceDisplay').innerText = `${cachedDistance} km`;
-            document.getElementById('totalFareDisplay').innerText = `₹${cachedFare}.00`;
+            const distEl = document.getElementById('distanceDisplay');
+            const fareEl = document.getElementById('totalFareDisplay');
+            if(distEl) distEl.innerText = `${cachedDistance} km`;
+            if(fareEl) fareEl.innerText = `₹${cachedFare}.00`;
         }
     } catch (e) { console.error(e); }
 }
 
 // =========================================================================
-// 3. CAPTAIN PORTAL LOGIC (TIMER + SWIPE + MAP)
+// 3. CAPTAIN PORTAL LOGIC
 // =========================================================================
 function toggleDuty() {
     isDriverOnline = !isDriverOnline;
     updateDriverUI();
 }
 
-// 10 Second Countdown Timer Function
 function startOfferCountdown() {
     timeLeft = 10;
     const timerDisplay = document.getElementById('countdownTimer');
-    timerDisplay.innerText = `${timeLeft}s`;
-    
-    offerTimer = setInterval(() => {
-        timeLeft--;
+    if(timerDisplay) {
         timerDisplay.innerText = `${timeLeft}s`;
-        if (timeLeft <= 0) {
-            clearInterval(offerTimer);
-            alert("⏰ Ride Time Out!");
-            currentLiveBooking = null; // Remove the ride
-            updateDriverUI();
-        }
-    }, 1000);
+        offerTimer = setInterval(() => {
+            timeLeft--;
+            timerDisplay.innerText = `${timeLeft}s`;
+            if (timeLeft <= 0) {
+                clearInterval(offerTimer);
+                alert("⏰ Ride Time Out!");
+                currentLiveBooking = null; 
+                updateDriverUI();
+            }
+        }, 1000);
+    }
 }
 
-// Swipe to Accept Mechanics
 function initSwipeMechanism() {
     const handle = document.getElementById('swipeTrigger');
     const track = document.getElementById('swipeTrack');
+    if (!handle || !track) return;
+    
     let isDragging = false;
     let startX = 0;
 
@@ -138,7 +165,7 @@ function initSwipeMechanism() {
         }
         if (diff > (track.offsetWidth - handle.offsetWidth - 20)) {
             isDragging = false;
-            clearInterval(offerTimer); // Stop timer
+            clearInterval(offerTimer);
             acceptRide();
         }
     };
@@ -151,31 +178,34 @@ function updateDriverUI() {
     const searchingState = document.getElementById('driverSearchingState');
     const reqCard = document.getElementById('rideRequestCard');
     const activeCard = document.getElementById('activeRideCard');
+    const dMap = document.getElementById('driverMap');
 
-    // Reset visibility
-    offlineState.style.display = "none";
-    searchingState.style.display = "none";
-    reqCard.style.display = "none";
-    activeCard.style.display = "none";
-    document.getElementById('driverMap').style.display = "none";
+    // Reset visibility if elements exist
+    if(offlineState) offlineState.style.display = "none";
+    if(searchingState) searchingState.style.display = "none";
+    if(reqCard) reqCard.style.display = "none";
+    if(activeCard) activeCard.style.display = "none";
+    if(dMap) dMap.style.display = "none";
 
     if (!isDriverOnline) {
-        btn.innerText = "GO ONLINE"; btn.style.backgroundColor = "#28a745";
-        offlineState.style.display = "block";
+        if(btn) { btn.innerText = "GO ONLINE"; btn.style.backgroundColor = "#28a745"; }
+        if(offlineState) offlineState.style.display = "block";
     } else {
-        btn.innerText = "GO OFFLINE"; btn.style.backgroundColor = "#dc3545";
+        if(btn) { btn.innerText = "GO OFFLINE"; btn.style.backgroundColor = "#dc3545"; }
         
         if (!currentLiveBooking) {
-            searchingState.style.display = "block";
+            if(searchingState) searchingState.style.display = "block";
         } else if (currentLiveBooking.status === "requested") {
-            document.getElementById('reqPickup').innerText = currentLiveBooking.pickup;
-            document.getElementById('reqDrop').innerText = currentLiveBooking.drop;
-            reqCard.style.display = "block";
-            startOfferCountdown(); // Start the 10s timer
-            initSwipeMechanism(); // Activate swipe
+            const p = document.getElementById('reqPickup');
+            const d = document.getElementById('reqDrop');
+            if(p) p.innerText = currentLiveBooking.pickup;
+            if(d) d.innerText = currentLiveBooking.drop;
+            if(reqCard) reqCard.style.display = "block";
+            startOfferCountdown();
+            initSwipeMechanism();
         } else if (currentLiveBooking.status === "accepted") {
-            activeCard.style.display = "block";
-            document.getElementById('driverMap').style.display = "block";
+            if(activeCard) activeCard.style.display = "block";
+            if(dMap) dMap.style.display = "block";
         }
     }
 }
@@ -184,14 +214,16 @@ function updateDriverUI() {
 // 4. TRIP CONTROL FUNCTIONS
 // =========================================================================
 function requestLiveBooking() {
-    // Basic validation
-    const name = document.getElementById('fullName').value;
-    if(!name) return alert("Enter Name");
+    const nameEl = document.getElementById('fullName');
+    const pickupEl = document.getElementById('pickupLocation');
+    const dropEl = document.getElementById('dropLocation');
+    
+    if(!nameEl || !nameEl.value) return alert("Enter Name");
     
     currentLiveBooking = {
-        name: name,
-        pickup: document.getElementById('pickupLocation').value,
-        drop: document.getElementById('dropLocation').value,
+        name: nameEl.value,
+        pickup: pickupEl.value,
+        drop: dropEl.value,
         status: "requested",
         otp: 1234,
         pickupCoords: pickupLatLng,
@@ -204,7 +236,6 @@ function requestLiveBooking() {
 function acceptRide() {
     if (!currentLiveBooking) return;
     currentLiveBooking.status = "accepted";
-    // Initialize Live Map with the route
     initializeDriverNavigationMap(currentLiveBooking.pickupCoords, currentLiveBooking.dropCoords);
     updateDriverUI();
 }
@@ -214,16 +245,19 @@ function initializeDriverNavigationMap(pCoords, dCoords) {
         driverMap = L.map('driverMap').setView([28.98, 79.40], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(driverMap);
     }
-    // Route logic here...
     const url = `https://router.project-osrm.org/route/v1/driving/${pCoords.lng},${pCoords.lat};${dCoords.lng},${dCoords.lat}?overview=full&geometries=geojson`;
     fetch(url).then(res => res.json()).then(data => {
-        L.geoJSON(data.routes[0].geometry, { style: { color: '#ffc107', weight: 6 } }).addTo(driverMap);
+        if(data.routes && data.routes.length > 0)
+            L.geoJSON(data.routes[0].geometry, { style: { color: '#ffc107', weight: 6 } }).addTo(driverMap);
     });
-    setTimeout(() => { driverMap.invalidateSize(); }, 500);
+    setTimeout(() => { if(driverMap) driverMap.invalidateSize(); }, 500);
 }
 
 function startRide() {
-    const enteredOTP = document.getElementById('otpInput').value;
+    const otpEl = document.getElementById('otpInput');
+    if(!otpEl) return;
+    
+    const enteredOTP = otpEl.value;
     if (enteredOTP == "1234") {
         alert("Ride Started!");
         currentLiveBooking.status = "ongoing";
