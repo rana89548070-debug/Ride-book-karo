@@ -3,28 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ride Book Karo With Map</title>
+  <title>Ride Book Karo - Free Version</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; }
-    input, button { margin-bottom: 10px; padding: 10px; width: 100%; max-width: 360px; display: block; box-sizing: border-box; }
-    button { background-color: #4CAF50; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
+    input, button { margin-bottom: 12px; padding: 12px; width: 100%; max-width: 360px; display: block; box-sizing: border-box; border-radius: 6px; border: 1px solid #ccc; }
+    button { background-color: #4CAF50; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 16px; }
     button:hover { background-color: #45a049; }
-    p { margin: 5px 0 15px 0; font-weight: bold; }
+    p { margin: 5px 0 15px 0; font-weight: bold; color: #333; }
     
-    /* MAP STYLING: Isse screen par map dikhega */
     #map {
       width: 100%;
       max-width: 360px;
       height: 300px;
       margin-bottom: 15px;
-      border: 2px solid #ccc;
+      border: 2px solid #ddd;
       border-radius: 8px;
     }
   </style>
 </head>
 <body>
 
-<h2>🚕 Book Your Ride</h2>
+<h2>🚖 Book Your Ride (Free Engine)</h2>
 
 <input id="name" placeholder="Apna Name Likhein">
 <input id="phone" placeholder="Apna Phone Number">
@@ -36,14 +35,15 @@
 <div id="map"></div>
 <p id="dropText">Drop: --</p>
 
-<button onclick="calculateFare()">💰 2. Calculate Distance & Fare</button>
+<button onclick="calculateFare()" style="background-color: #f39c12;">💰 2. Calculate Distance & Fare</button>
 
 <p id="distanceText">Distance: --</p>
 <p id="fareText">Fare: --</p>
 
 <button onclick="bookRide()" style="background-color: #008CBA;">✅ 3. Book Ride</button>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCpCYltum_43pjI5u_6PTs87Rr0F3ySdlg&callback=initMap" async defer></script>
+<!-- GOOGLE MAPS SCRIPT: Isme apni chalne wali API key hi rehne dena -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGq5g3zt23YkCmD81a-HrZq6effxmFPa0&callback=initMap" async defer></script>
 
 <script src="app.js"></script>
 
