@@ -3,165 +3,328 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rapido Bike Clone - Unified Engine</title>
+  <title>GoBike Pro - Mobile Cloud Platform</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
-    :root { --yellow: #FFDD00; --dark: #1A1A1A; --gray: #f4f4f4; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: var(--gray); color: var(--dark); }
-    header { background-color: var(--dark); color: var(--yellow); padding: 15px; text-align: center; font-weight: bold; font-size: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    
-    .container { max-width: 500px; margin: 20px auto; padding: 15px; box-sizing: border-box; }
-    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
-    
-    /* Login Screen Buttons */
-    .role-btn { background-color: var(--yellow); color: var(--dark); border: 2px solid var(--dark); padding: 15px; font-size: 18px; font-weight: bold; width: 100%; border-radius: 8px; margin-bottom: 12px; cursor: pointer; text-align: center; }
-    .role-btn:hover { background-color: var(--dark); color: var(--yellow); }
-    
-    input, select, button { width: 100%; padding: 12px; margin-bottom: 12px; box-sizing: border-box; border-radius: 6px; border: 1px solid #ccc; font-size: 15px; }
-    .btn-main { background-color: var(--dark); color: var(--yellow); font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; }
-    .btn-main:hover { background-color: #333; }
-    .btn-yellow { background-color: var(--yellow); color: var(--dark); font-weight: bold; border: 1px solid var(--dark); cursor: pointer; }
-    
-    #map { width: 100%; height: 250px; margin-bottom: 15px; border: 2px solid var(--dark); border-radius: 8px; }
-    .hidden { display: none; }
-    .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; }
-    
-    /* Flashy Notification Alert for Driver */
-    .popup-alert { background: #fff3cd; border: 2px solid #ffeeba; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 15px; animation: blink 1s infinite alternate; }
-    @keyframes blink { from { box-shadow: 0 0 5px red; } to { box-shadow: 0 0 20px red; } }
-    
-    .wallet-box { background: var(--dark); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
-    .wallet-box h3 { color: var(--yellow); margin: 0; }
-    
-    .back-link { display: block; text-align: center; margin-top: 15px; color: #555; text-decoration: none; font-weight: bold; cursor: pointer; }
+    #map { height: 250px; width: 100%; border-radius: 12px; margin-bottom: 12px; z-index: 1; }
   </style>
 </head>
-<body>
+<body class="bg-gray-100 font-sans text-gray-900 m-0 p-0">
 
-<header>⚡ RAPIDO BIKE TAXI ENGINE</header>
-
-<div class="container">
-
-  <div id="portalSelectionScreen" class="card">
-    <h2 style="text-align:center; margin-top:0;">Select Your Role</h2>
-    <button class="role-btn" onclick="switchView('riderLoginPortal')">🙋‍♂️ Rider (Book Bike)</button>
-    <button class="role-btn" onclick="switchView('captainLoginPortal')">🏍️ Captain (Driver App)</button>
-    <button class="role-btn" onclick="switchView('adminPortal')">🎛️ Admin Dashboard</button>
+  <div id="roleSelection" class="flex flex-col items-center justify-center min-h-screen p-4 bg-yellow-400">
+    <h1 class="text-3xl font-bold mb-2 text-center text-black">🏍️ GoBike Core Engine</h1>
+    <p class="text-sm text-center mb-8 text-gray-800 font-medium">Mobile Cloud Production System</p>
+    <button onclick="openPortal('rider')" class="w-full max-w-xs bg-black text-white py-3 rounded-xl font-semibold mb-4 shadow-lg active:scale-95 transition">Rider (Book Bike)</button>
+    <button onclick="openPortal('driver')" class="w-full max-w-xs bg-white text-black py-3 rounded-xl font-semibold mb-4 shadow-lg active:scale-95 transition">Driver (Captain Console)</button>
+    <button onclick="openPortal('admin')" class="w-full max-w-xs bg-gray-800 text-white py-3 rounded-xl font-semibold shadow-lg active:scale-95 transition">Admin Control Panel</button>
   </div>
 
-  <div id="riderLoginPortal" class="card hidden">
-    <h3>Rider Login</h3>
-    <input id="riderName" placeholder="Enter Full Name">
-    <input id="riderPhone" placeholder="Enter Mobile Number">
-    <button class="btn-main" onclick="loginRider()">Proceed to Book</button>
-    <a class="back-link" onclick="logoutAll()">← Back to Home</a>
-  </div>
-
-  <div id="captainLoginPortal" class="card hidden">
-    <h3>Captain Dashboard Login</h3>
-    <input id="captainName" placeholder="Enter Driver Name">
-    <input id="captainVehicle" placeholder="Bike Model & Number (e.g. Splendor - DL3C...)">
-    <button class="btn-main" onclick="loginCaptain()">Go Online</button>
-    <a class="back-link" onclick="logoutAll()">← Back to Home</a>
-  </div>
-
-  <div id="riderDashboard" class="card hidden">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h3 style="margin:0;">Welcome, <span id="lblRiderName">User</span></h3>
-      <button style="width:auto; padding:5px 10px; margin:0;" onclick="logoutAll()">Logout</button>
-    </div>
-    <hr style="margin: 15px 0;">
+  <div id="riderPortal" class="hidden p-4">
+    <button onclick="goBack()" class="text-sm font-bold text-gray-600 mb-4 block">← Back Menu</button>
+    <h2 class="text-2xl font-bold mb-4">📍 Book Your Ride</h2>
     
-    <button class="btn-yellow" onclick="getPickupLocation()">📍 Step 1: Set Live Pickup</button>
-    <p id="txtPickup">Pickup Address: --</p>
-    
-    <label>🗺️ <b>Map par Click karke Drop Location chunein:</b></label>
     <div id="map"></div>
-    <p id="txtDrop">Drop Address: --</p>
-    
-    <button class="btn-main" onclick="calculateBikeFare()">💰 Step 2: Check Distance & Fare</button>
-    <p id="txtDistance">Distance: --</p>
-    <p id="txtFare" style="font-size:18px;">Estimated Fare: --</p>
-    
-    <label>Select Payment Method:</label>
-    <select id="riderPaymentMethod">
-      <option value="Cash/UPI to Captain">Cash/UPI to Captain</option>
-      <option value="Paid Online (Wallet)">Pay Now (Online Wallet)</option>
-    </select>
-    
-    <button class="btn-yellow" style="background-color:var(--yellow);" onclick="requestBikeRide()">🏍️ Step 3: Book Rapido Bike</button>
-    
-    <div id="riderStatusBox" class="hidden" style="margin-top:15px; padding:15px; background:#e2f0d9; border-radius:8px;">
-      <h4 style="margin:0; color:#385723;">Ride Status Tracking</h4>
-      <p id="txtTrackStatus">Status: Searching for nearest Captain...</p>
-      <div id="txtTrackCaptainInfo" style="font-weight:normal; margin-bottom:5px;"></div>
-      <div id="txtTrackOtp" style="font-size:20px; font-weight:bold; color:red; display:none;">OTP: ----</div>
+
+    <div class="bg-white p-4 rounded-xl shadow-md mb-4">
+      <input type="text" id="rName" placeholder="Apna Naam" class="w-full p-3 border rounded-xl mb-3 bg-gray-50">
+      <input type="tel" id="rPhone" placeholder="Mobile Number" class="w-full p-3 border rounded-xl mb-4 bg-gray-50">
+      <p class="text-sm text-gray-500 mb-2">Estimated Fare: <span class="font-bold text-black" id="estFare">₹--</span></p>
+      <button onclick="requestRide()" class="w-full bg-yellow-500 text-black font-bold py-3 rounded-xl shadow active:scale-95 transition">⚡ Book Now</button>
+    </div>
+    <div id="riderStatusBox" class="p-3 bg-blue-50 text-blue-800 rounded-xl hidden font-medium text-center"></div>
+  </div>
+
+  <div id="driverPortal" class="hidden p-4">
+    <button onclick="goBack()" class="text-sm font-bold text-gray-600 mb-4 block">← Back Menu</button>
+    <h2 class="text-2xl font-bold mb-2">🏍️ Captain Console</h2>
+    <p id="vStatusText" class="text-xs font-bold uppercase mb-4 text-orange-600">Status: Checking Account...</p>
+
+    <div id="kycForm" class="bg-white p-4 rounded-xl shadow-md mb-4 hidden">
+      <h3 class="font-bold mb-2 text-red-600">⚠️ Verification Mandatory</h3>
+      <input type="text" id="dName" placeholder="Full Name" class="w-full p-3 border rounded-xl mb-2 bg-gray-50">
+      <input type="text" id="dVehicle" placeholder="Bike Number (e.g. DL 3C XX 1234)" class="w-full p-3 border rounded-xl mb-2 bg-gray-50">
+      <input type="text" id="dAadhaar" placeholder="Aadhaar Card Link / Number" class="w-full p-3 border rounded-xl mb-3 bg-gray-50">
+      <button onclick="submitKyc()" class="w-full bg-black text-white font-bold py-2 rounded-xl">Upload Docs For Approval</button>
+    </div>
+
+    <div id="driverActiveConsole" class="hidden">
+      <button onclick="toggleDuty()" id="dutyBtn" class="w-full bg-green-600 text-white font-bold py-3 rounded-xl mb-4 shadow">Go Online</button>
+      <div id="driverJobAlert" class="bg-yellow-100 border border-yellow-300 p-4 rounded-xl hidden">
+        <p class="font-bold text-yellow-800">🔥 Live Job Available!</p>
+        <p id="jobDetails" class="text-sm my-2">Rider: -- | Fare: ₹--</p>
+        <button onclick="acceptRide()" class="w-full bg-black text-white font-bold py-2 rounded-lg text-sm">Accept Job Request</button>
+      </div>
     </div>
   </div>
 
-  <div id="captainDashboard" class="card hidden">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h3 style="margin:0;">Captain: <span id="lblCaptainName">Driver</span></h3>
-      <button style="width:auto; padding:5px 10px; margin:0;" onclick="logoutAll()">Go Offline</button>
-    </div>
+  <div id="adminPortal" class="hidden p-4">
+    <button onclick="goBack()" class="text-sm font-bold text-gray-600 mb-4 block">← Back Menu</button>
+    <h2 class="text-2xl font-bold mb-4">📊 System Control Dashboard</h2>
     
-    <div class="wallet-box" style="margin-top:15px;">
-      <p style="margin:0; font-size:14px; color:#aaa;">Your Earnings (Net 95%)</p>
-      <h3 id="lblCaptainWallet">₹0.00</h3>
-      <button class="btn-yellow" style="margin-top:10px; padding:6px;" onclick="withdrawMoney('captain')">💸 Withdraw Earnings</button>
-    </div>
-
-    <div id="incomingRequestAlert" class="popup-alert hidden">
-      <h4 style="margin:0; font-size:16px;">🔥 LIVE RIDE REQUEST RECEIVED!</h4>
-      <p id="txtIncomingDetails" style="margin:5px 0 10px 0;">Customer: --<br>Fare: --</p>
-      <div style="display:flex; gap:10px;">
-        <button class="btn-main" style="background:green; color:white; margin:0;" onclick="acceptRide()">🟢 Accept Ride</button>
-        <button class="btn-main" style="background:red; color:white; margin:0;" onclick="rejectRide()">🔴 Reject</button>
+    <div class="grid grid-cols-2 gap-3 mb-6">
+      <div class="bg-white p-4 rounded-xl shadow">
+        <p class="text-xs text-gray-500 font-medium">Admin Commission</p>
+        <h3 class="text-2xl font-bold text-green-600" id="admWallet">₹0.00</h3>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <p class="text-xs text-gray-500 font-medium">Active Drivers</p>
+        <h3 class="text-2xl font-bold text-blue-600" id="activeDriversCount">0</h3>
       </div>
     </div>
 
-    <div id="captainActiveJobBox" class="hidden" style="padding:15px; background:#fff; border:2px dashed var(--dark); border-radius:8px;">
-      <h4 style="margin:0;">🚨 Active Trip Progress</h4>
-      <p id="txtJobDetails">Details load ho rahe hain...</p>
-      
-      <div id="captainOtpBox">
-        <input id="txtVerifyOtp" placeholder="Enter Customer 4-Digit OTP" type="number">
-        <button class="btn-main" onclick="startTripWithOtp()">⚡ Start Journey</button>
-      </div>
-      
-      <button id="btnEndTrip" class="btn-yellow hidden" style="background-color:red; color:white;" onclick="endTripAndDeduct()">🏁 End Ride (Reach Destination)</button>
+    <div class="bg-white p-4 rounded-xl shadow-md">
+      <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">📋 Driver Verification Queue</h3>
+      <div id="verificationQueue" class="text-sm text-gray-500">Koi pending application nahi hai.</div>
     </div>
   </div>
 
-  <div id="adminPortal" class="card hidden">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-      <h3 style="margin:0;">🎛️ Master Admin Control</h3>
-      <button style="width:auto; padding:5px 10px; margin:0;" onclick="switchView('portalSelectionScreen')">Close</button>
-    </div>
+  <script>
+    // ⚠️ CHUNAUTI: Apne pichle step wala Firebase credentials yahan copy-paste karein!
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com"
+    };
 
-    <div class="wallet-box">
-      <p style="margin:0; font-size:14px; color:#aaa;">Admin Total Revenue (5% Commission)</p>
-      <h3 id="lblAdminWallet">₹0.00</h3>
-      <button class="btn-yellow" style="margin-top:10px; padding:6px;" onclick="withdrawMoney('admin')">💸 Withdraw Admin Fund</button>
-    </div>
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-    <h4>📊 Live System Control Panel</h4>
-    <div style="font-size:14px; background:#eee; padding:10px; border-radius:6px; margin-bottom:15px;">
-      <b>Total Drivers Tracked:</b> <span id="statDrivers">0</span><br>
-      <b>Total Rides Booked:</b> <span id="statRides">0</span>
-    </div>
+    let map, driverMarker;
+    let isOnline = false;
+    let currentDriverId = "captain_01"; // Hardcoded session mobile identity ke liye
+    let currentIncomingRideId = null;
 
-    <h4>📋 Master Rides Database History (Key: "rides")</h4>
-    <div id="adminRidesLog" style="font-size:12px; overflow-y:auto; max-height:200px; border:1px solid #ccc; padding:5px; background:#fafafa;">
-      No history available.
-    </div>
-    
-    <button class="btn-main" style="background-color:#c0392b; color:white; margin-top:15px;" onclick="resetSystemDatabase()">🗑️ Hard Reset Whole System</button>
-  </div>
+    // Initialization Helper for Leaflet Maps
+    function initMap(lat, lng) {
+      if (!map) {
+        map = L.map('map').setView([lat, lng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: 'GoBike Maps'
+        }).addTo(map);
+        driverMarker = L.marker([lat, lng]).addTo(map).bindPopup('Bike Captain Location').openPopup();
+      } else {
+        map.setView([lat, lng], 14);
+        driverMarker.setLatLng([lat, lng]);
+      }
+    }
 
-</div>
+    function openPortal(portalId) {
+      document.getElementById('roleSelection').classList.add('hidden');
+      document.getElementById(portalId + 'Portal').classList.remove('hidden');
+      
+      if(portalId === 'rider') {
+        // Mock default Delhi location for map simulation
+        initMap(28.6139, 77.2090);
+        document.getElementById('estFare').innerText = "₹" + Math.round(45 + Math.random() * 50);
+      }
+      if(portalId === 'driver') {
+        checkDriverStatus();
+      }
+      if(portalId === 'admin') {
+        initAdminPanel();
+      }
+    }
 
-<script src="https://maps.googleapis.com/maps/api/js?key=APNI_ASLI_API_KEY&callback=initMap" async defer></script>
-<script src="app.js"></script>
+    function goBack() {
+      ['riderPortal', 'driverPortal', 'adminPortal'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      document.getElementById('roleSelection').classList.remove('hidden');
+    }
 
+    // 📝 ================= DRIVER VERIFICATION PIPELINE =================
+    function checkDriverStatus() {
+      database.ref(`drivers/${currentDriverId}`).on('value', (snap) => {
+        const driver = snap.val();
+        const statusText = document.getElementById('vStatusText');
+        const kycForm = document.getElementById('kycForm');
+        const activeConsole = document.getElementById('driverActiveConsole');
+
+        if (!driver) {
+          statusText.innerText = "Status: Not Registered";
+          kycForm.classList.remove('hidden');
+          activeConsole.classList.add('hidden');
+        } else {
+          statusText.innerText = "Status: " + driver.verificationStatus.toUpperCase();
+          if(driver.verificationStatus === 'verified') {
+            statusText.className = "text-xs font-bold uppercase mb-4 text-green-600";
+            kycForm.classList.add('hidden');
+            activeConsole.classList.remove('hidden');
+            listenForJobs();
+          } else if(driver.verificationStatus === 'under_review') {
+            statusText.className = "text-xs font-bold uppercase mb-4 text-blue-600";
+            kycForm.classList.add('hidden');
+            activeConsole.classList.add('hidden');
+          } else {
+            statusText.className = "text-xs font-bold uppercase mb-4 text-red-600";
+            kycForm.classList.remove('hidden');
+            activeConsole.classList.add('hidden');
+          }
+        }
+      });
+    }
+
+    function submitKyc() {
+      const name = document.getElementById('dName').value.trim();
+      const vehicle = document.getElementById('dVehicle').value.trim();
+      const aadhaar = document.getElementById('dAadhaar').value.trim();
+
+      if(!name || !vehicle || !aadhaar) {
+        alert("Bhai, saare documents fill karna mandatory hai!");
+        return;
+      }
+
+      database.ref(`drivers/${currentDriverId}`).set({
+        name: name,
+        vehicle: vehicle,
+        aadhaar: aadhaar,
+        verificationStatus: "under_review",
+        isOnline: false,
+        lat: 28.6139,
+        lng: 77.2090
+      }).then(() => alert("✅ Documents uploaded! Admin ke approval ka wait karein."));
+    }
+
+    // 🏍️ ================= LIVE DRIVER DUTY ENGINE =================
+    function toggleDuty() {
+      isOnline = !isOnline;
+      const btn = document.getElementById('dutyBtn');
+      database.ref(`drivers/${currentDriverId}`).update({ isOnline: isOnline });
+
+      if(isOnline) {
+        btn.innerText = "Go Offline (Online Hain)";
+        btn.className = "w-full bg-red-600 text-white font-bold py-3 rounded-xl mb-4 shadow";
+        
+        // 🛰️ Simulation: Live Location tracking data flow pushing every 4 seconds
+        window.locationSimulation = setInterval(() => {
+          // Mock movement vector additions to simulate moving bike
+          database.ref(`drivers/${currentDriverId}`).once('value').then(s => {
+            let nextLat = s.val().lat + (Math.random() - 0.5) * 0.002;
+            let nextLng = s.val().lng + (Math.random() - 0.5) * 0.002;
+            database.ref(`drivers/${currentDriverId}`).update({ lat: nextLat, lng: nextLng });
+          });
+        }, 4000);
+      } else {
+        btn.innerText = "Go Online";
+        btn.className = "w-full bg-green-600 text-white font-bold py-3 rounded-xl mb-4 shadow";
+        if(window.locationSimulation) clearInterval(window.locationSimulation);
+      }
+    }
+
+    function listenForJobs() {
+      database.ref('active_rides').on('value', (snap) => {
+        if(!isOnline) return;
+        const rides = snap.val();
+        for(let id in rides) {
+          if(rides[id].status === "Pending") {
+            currentIncomingRideId = id;
+            document.getElementById('jobDetails').innerText = `Rider: ${rides[id].riderName} | Fare: ₹${rides[id].fare}`;
+            document.getElementById('driverJobAlert').classList.remove('hidden');
+            break;
+          }
+        }
+      });
+    }
+
+    function acceptRide() {
+      if(!currentIncomingRideId) return;
+      database.ref(`drivers/${currentDriverId}`).once('value').then(dSnap => {
+        database.ref(`active_rides/${currentIncomingRideId}`).update({
+          status: "Accepted",
+          captainName: dSnap.val().name,
+          captainVehicle: dSnap.val().vehicle,
+          driverId: currentDriverId
+        }).then(() => {
+          document.getElementById('driverJobAlert').classList.add('hidden');
+          alert("Trip Accepted! Live location map coordinate updates stream channel open.");
+          
+          // Stream location to the rider visually via database listener link hooks
+          database.ref(`drivers/${currentDriverId}`).on('value', (dLocSnap) => {
+            database.ref(`active_rides/${currentIncomingRideId}/liveLocation`).set({
+              lat: dLocSnap.val().lat,
+              lng: dLocSnap.val().lng
+            });
+          });
+        });
+      });
+    }
+
+    // 🙋‍♂️ ================= RIDER PLATFORM ENGINE =================
+    function requestRide() {
+      const name = document.getElementById('rName').value.trim();
+      const phone = document.getElementById('rPhone').value.trim();
+      const fareAmt = parseInt(document.getElementById('estFare').innerText.replace('₹', ''));
+
+      if(!name || !phone) {
+        alert("Details fill karein!");
+        return;
+      }
+
+      const newRideRef = database.ref('active_rides').push();
+      const rStatusBox = document.getElementById('riderStatusBox');
+      rStatusBox.innerText = "Searching nearby Captains...";
+      rStatusBox.classList.remove('hidden');
+
+      newRideRef.set({
+        riderName: name,
+        riderPhone: phone,
+        fare: fareAmt,
+        status: "Pending"
+      });
+
+      // Map tracking loop attachment hooks
+      newRideRef.on('value', (snapshot) => {
+        const ride = snapshot.val();
+        if(!ride) return;
+
+        if(ride.status === "Accepted" && ride.liveLocation) {
+          rStatusBox.innerText = `Captain ${ride.captainName} is arriving!`;
+          // Dynamically map updates moves marker in real-world sync on rider screen view
+          initMap(ride.liveLocation.lat, ride.liveLocation.lng);
+        }
+      });
+    }
+
+    // 📊 ================= SYSTEM ADMIN DASHBOARD ENGINE =================
+    function initAdminPanel() {
+      database.ref('wallets/admin').on('value', snap => {
+        document.getElementById('admWallet').innerText = `₹${(snap.val() || 0).toFixed(2)}`;
+      });
+
+      database.ref('drivers').on('value', snap => {
+        const drivers = snap.val();
+        let queueContainer = document.getElementById('verificationQueue');
+        let onlineCount = 0;
+        queueContainer.innerHTML = "";
+
+        let hasPending = false;
+        for(let id in drivers) {
+          if(drivers[id].isOnline) onlineCount++;
+
+          if(drivers[id].verificationStatus === 'under_review') {
+            hasPending = true;
+            let div = document.createElement('div');
+            div.className = "p-3 bg-gray-50 border rounded-lg mb-2 flex justify-between items-center";
+            div.innerHTML = `
+              <div>
+                <p class="font-bold text-black">${drivers[id].name} (${drivers[id].vehicle})</p>
+                <p class="text-xs text-gray-500">ID Link: ${drivers[id].aadhaar}</p>
+              </div>
+              <button onclick="approveDriver('${id}')" class="bg-green-600 text-white px-3 py-1 rounded-md text-xs font-bold">Approve</button>
+            `;
+            queueContainer.appendChild(div);
+          }
+        }
+        document.getElementById('activeDriversCount').innerText = onlineCount;
+        if(!hasPending) queueContainer.innerText = "Sabh clear hai! No applications in queue.";
+      });
+    }
+
+    function approveDriver(id) {
+      database.ref(`drivers/${id}`).update({ verificationStatus: "verified" })
+        .then(() => alert("Driver Registration Approved Successfully!"));
+    }
+  </script>
 </body>
 </html>
